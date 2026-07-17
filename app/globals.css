@@ -5317,6 +5317,28 @@ body {
   align-items: center;
 }
 
+.salonFeature .featureList {
+  gap: 8px;
+}
+
+.salonFeature .featureList div {
+  position: relative;
+  overflow: hidden;
+  min-height: 86px;
+  border: 1px solid rgba(63, 38, 25, 0.12);
+  border-left: 6px solid var(--patiiz-coral);
+  border-radius: 18px;
+  padding: 20px 22px 20px 44px;
+  background: rgba(255, 253, 249, 0.88);
+  box-shadow: 0 16px 42px -36px rgba(63, 38, 25, 0.45);
+}
+
+.salonFeature .featureList svg {
+  position: absolute;
+  left: 16px;
+  color: var(--patiiz-coral);
+}
+
 .contactCard .primaryButton {
   color: #fffaf4;
   background: linear-gradient(135deg, var(--patiiz-coffee), var(--patiiz-espresso));
