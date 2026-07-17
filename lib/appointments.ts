@@ -1,4 +1,5 @@
 import { kv } from "@vercel/kv";
+import { findClosedBlockConflict, getBusinessSettings, isWithinWorkingHours, normalizeTime, overlaps, toMinutes } from "./business";
 import { Appointment, AppointmentInput, AppointmentStatus } from "./types";
 
 const INDEX_KEY = "appointments:index";
@@ -6,19 +7,6 @@ const memoryStore = new Map<string, Appointment>();
 
 function hasKv() {
   return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
-}
-
-function normalizeTime(value: string) {
-  return value.trim().padStart(5, "0");
-}
-
-function toMinutes(value: string) {
-  const [hours, minutes] = normalizeTime(value).split(":").map(Number);
-  return hours * 60 + minutes;
-}
-
-function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string) {
-  return toMinutes(aStart) < toMinutes(bEnd) && toMinutes(bStart) < toMinutes(aEnd);
 }
 
 export function validateAppointment(input: AppointmentInput) {
@@ -58,7 +46,18 @@ export async function listAppointments() {
 
 export async function listPublicAppointments(date?: string) {
   const items = await listAppointments();
-  return items
+  const settings = await getBusinessSettings();
+  const closedBlocks: { date: string; startTime: string; endTime: string; service: string; status: AppointmentStatus | "closed" }[] = settings.closedBlocks
+    .filter((block) => !date || block.date === date)
+    .map(({ date: day, startTime, endTime, reason }) => ({
+      date: day,
+      startTime,
+      endTime,
+      service: reason || "Kapalı",
+      status: "closed" as const
+    }));
+
+  const publicAppointments: { date: string; startTime: string; endTime: string; service: string; status: AppointmentStatus | "closed" }[] = items
     .filter((item) => !date || item.date === date)
     .filter((item) => item.status !== "cancelled")
     .map(({ date: day, startTime, endTime, service, status }) => ({
@@ -68,11 +67,23 @@ export async function listPublicAppointments(date?: string) {
       service,
       status
     }));
+
+  return publicAppointments.concat(closedBlocks);
 }
 
 export async function createAppointment(input: AppointmentInput) {
   const error = validateAppointment(input);
   if (error) throw new Error(error);
+
+  const settings = await getBusinessSettings();
+  if (!isWithinWorkingHours(settings, input.date, input.startTime, input.endTime)) {
+    throw new Error("Bu saat işletmenin çalışma saatleri dışında.");
+  }
+
+  const closedBlock = findClosedBlockConflict(settings, input.date, input.startTime, input.endTime);
+  if (closedBlock) {
+    throw new Error(`Bu saat kapalı: ${closedBlock.reason}`);
+  }
 
   const existing = await listAppointments();
   const hasConflict = existing.some(

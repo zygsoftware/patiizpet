@@ -50,3 +50,27 @@ export type CustomerInput = {
 };
 
 export type PetInput = Omit<PetRecord, "id" | "createdAt">;
+
+export type DayKey = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+
+export type BusinessDayHours = {
+  open: string;
+  close: string;
+  closed: boolean;
+};
+
+export type ClosedBlock = {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  reason: string;
+  createdAt: string;
+};
+
+export type BusinessSettings = {
+  slotMinutes: number;
+  workingHours: Record<DayKey, BusinessDayHours>;
+  closedBlocks: ClosedBlock[];
+  updatedAt: string;
+};

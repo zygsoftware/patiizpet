@@ -3632,3 +3632,318 @@ body,
   opacity: 1;
   transform: scale(1);
 }
+
+/* ---------- Admin simplification + operations management ---------- */
+.adminPageRoot {
+  background:
+    linear-gradient(135deg, #fffaf5 0%, #f7eee8 48%, #f4f6f2 100%);
+}
+
+.adminShell {
+  width: min(1240px, calc(100% - var(--gutter) * 2));
+  padding: clamp(24px, 4vw, 42px) 0 72px;
+}
+
+.adminDecor {
+  opacity: 0.08;
+}
+
+.premiumAdminHero {
+  min-height: auto;
+  padding: 22px 24px;
+  border-radius: 22px;
+  background: rgba(255, 253, 249, 0.78);
+  box-shadow: 0 18px 50px -44px rgba(47, 47, 43, 0.55);
+}
+
+.premiumAdminHero h1 {
+  max-width: 680px;
+  margin-top: 8px;
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.05;
+}
+
+.premiumAdminHero p {
+  max-width: 620px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.statRow {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.statCard {
+  min-height: 82px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  box-shadow: none;
+}
+
+.statCard strong {
+  font-size: clamp(25px, 2.8vw, 36px);
+}
+
+.statCard span {
+  font-size: 13px;
+}
+
+.statCard.warm {
+  background: rgba(238, 140, 127, 0.1);
+}
+
+.adminOpsGrid {
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.opsPanel {
+  min-height: 168px;
+  padding: 16px;
+  border-radius: 20px;
+  box-shadow: none;
+}
+
+.pendingPanel,
+.todayPanel {
+  background: rgba(255, 253, 249, 0.76);
+}
+
+.opsHeader {
+  margin-bottom: 10px;
+}
+
+.opsHeader h2 {
+  font-size: clamp(20px, 1.7vw, 25px);
+}
+
+.opsBadge {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 12px;
+}
+
+.requestCard,
+.timelineItem,
+.appointmentCard,
+.customerCard,
+.closedBlockCard {
+  border-radius: 14px;
+}
+
+.requestCard,
+.appointmentCard {
+  padding: 12px;
+}
+
+.adminToolbar {
+  margin: 16px 0 14px;
+  align-items: start;
+}
+
+.adminTabs {
+  border-radius: 16px;
+  padding: 4px;
+}
+
+.adminTab {
+  min-height: 38px;
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.adminGrid,
+.customerAdminGrid,
+.businessGrid {
+  display: grid;
+  grid-template-columns: minmax(320px, 390px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.businessGrid {
+  grid-template-columns: minmax(420px, 0.95fr) minmax(360px, 1.05fr);
+}
+
+.businessSide,
+.customerForms {
+  display: grid;
+  gap: 14px;
+}
+
+.adminForm,
+.calendarPanel,
+.customerDetail {
+  border-radius: 20px;
+  box-shadow: none;
+  background: rgba(255, 253, 249, 0.78);
+}
+
+.adminForm {
+  padding: 18px;
+}
+
+.formHeader {
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.formHeader h2,
+.panelHeader h2 {
+  font-size: 22px;
+}
+
+.formHeader p,
+.panelHeader p {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.formGrid {
+  gap: 10px;
+}
+
+.adminForm input,
+.adminForm select,
+.adminForm textarea,
+.calendarPanel select,
+.searchBox {
+  min-height: 42px;
+  border-radius: 12px;
+}
+
+.quickApprove,
+.quickDone,
+.quickCancel {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.businessHoursForm .submitButton,
+.closedBlockForm .submitButton,
+.adminForm .submitButton {
+  min-height: 44px;
+}
+
+.compactField {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.compactField span,
+.dayToggle span {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.hoursTable {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.hoursRow {
+  display: grid;
+  grid-template-columns: minmax(118px, 1fr) 104px 104px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid rgba(234, 222, 212, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 250, 245, 0.72);
+}
+
+.dayToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dayToggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand-paw-dark);
+}
+
+.closedBlockList {
+  display: grid;
+  gap: 8px;
+}
+
+.closedBlockCard {
+  display: grid;
+  grid-template-columns: 1fr 38px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(234, 222, 212, 0.9);
+  background: rgba(255, 250, 245, 0.7);
+}
+
+.closedBlockCard span,
+.closedBlockCard strong,
+.closedBlockCard small {
+  display: block;
+}
+
+.closedBlockCard small {
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.heroSlide {
+  object-position: 62% 38%;
+}
+
+@media (min-width: 1180px) {
+  .heroSlide {
+    object-position: 66% 40%;
+  }
+}
+
+@media (max-width: 1080px) {
+  .statRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .adminGrid,
+  .customerAdminGrid,
+  .businessGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .statRow,
+  .adminOpsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .adminToolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .adminTabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .adminTab {
+    white-space: nowrap;
+  }
+
+  .hoursRow {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dayToggle {
+    grid-column: 1 / -1;
+  }
+}

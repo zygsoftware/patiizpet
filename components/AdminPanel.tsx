@@ -6,6 +6,7 @@ import {
   AlertCircle,
   CalendarDays,
   CalendarPlus,
+  CalendarX2,
   CheckCircle2,
   Clock,
   Loader2,
@@ -16,13 +17,14 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Settings,
   ShieldCheck,
   Trash2,
   UserPlus,
   Users
 } from "lucide-react";
 import { todayInTurkey } from "@/lib/date";
-import type { Appointment, AppointmentStatus, CustomerRecord } from "@/lib/types";
+import type { Appointment, AppointmentStatus, BusinessSettings, CustomerRecord, DayKey } from "@/lib/types";
 
 const statusLabels: Record<AppointmentStatus, string> = {
   pending: "Bekliyor",
@@ -30,6 +32,18 @@ const statusLabels: Record<AppointmentStatus, string> = {
   completed: "Tamamlandı",
   cancelled: "İptal"
 };
+
+const dayLabels: Record<DayKey, string> = {
+  monday: "Pazartesi",
+  tuesday: "Salı",
+  wednesday: "Çarşamba",
+  thursday: "Perşembe",
+  friday: "Cuma",
+  saturday: "Cumartesi",
+  sunday: "Pazar"
+};
+
+const dayOrder = Object.keys(dayLabels) as DayKey[];
 
 function normalizePhone(value: string) {
   const digits = (value || "").replace(/\D/g, "");
@@ -47,12 +61,13 @@ export default function AdminPanel() {
   const [sessionPassword, setSessionPassword] = useState("");
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
+  const [settings, setSettings] = useState<BusinessSettings | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AppointmentStatus>("all");
-  const [tab, setTab] = useState<"appointments" | "customers">("appointments");
+  const [tab, setTab] = useState<"appointments" | "customers" | "business">("appointments");
 
   const isLoggedIn = Boolean(sessionPassword);
   const today = todayInTurkey();
@@ -67,9 +82,10 @@ export default function AdminPanel() {
       today: active.filter((item) => item.date === today).length,
       week: active.filter((item) => item.date >= today && item.date <= weekEnd).length,
       customers: customers.length,
-      pets: customers.reduce((sum, customer) => sum + customer.pets.length, 0)
+      pets: customers.reduce((sum, customer) => sum + customer.pets.length, 0),
+      closedBlocks: settings?.closedBlocks.length || 0
     };
-  }, [appointments, customers, today, weekEnd]);
+  }, [appointments, customers, settings, today, weekEnd]);
 
   const visibleAppointments = useMemo(() => {
     const q = query.toLowerCase();
@@ -121,22 +137,25 @@ export default function AdminPanel() {
   async function loadAll(activePassword = sessionPassword) {
     if (!activePassword) return false;
     setLoading(true);
-    const [appointmentResponse, customerResponse] = await Promise.all([
+    const [appointmentResponse, customerResponse, settingsResponse] = await Promise.all([
       fetch("/api/appointments", { headers: { "x-admin-password": activePassword } }),
-      fetch("/api/customers", { headers: { "x-admin-password": activePassword } })
+      fetch("/api/customers", { headers: { "x-admin-password": activePassword } }),
+      fetch("/api/settings", { headers: { "x-admin-password": activePassword } })
     ]);
     const appointmentData = await appointmentResponse.json();
     const customerData = await customerResponse.json();
+    const settingsData = await settingsResponse.json();
     setLoading(false);
 
-    if (!appointmentResponse.ok || !customerResponse.ok) {
-      setMessage(appointmentData.message || customerData.message || "Admin girişi başarısız.");
+    if (!appointmentResponse.ok || !customerResponse.ok || !settingsResponse.ok) {
+      setMessage(appointmentData.message || customerData.message || settingsData.message || "Admin girişi başarısız.");
       return false;
     }
 
     setAppointments(appointmentData.appointments || []);
     const loadedCustomers = customerData.customers || [];
     setCustomers(loadedCustomers);
+    setSettings(settingsData.settings || null);
     if (!selectedCustomerId && loadedCustomers[0]) setSelectedCustomerId(loadedCustomers[0].id);
     return true;
   }
@@ -235,6 +254,84 @@ export default function AdminPanel() {
     setMessage("Evcil hayvan kaydedildi.");
     form.reset();
     await loadAll();
+  }
+
+  async function saveWorkingHours(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!settings) return;
+    setMessage("");
+    const formData = new FormData(event.currentTarget);
+    const workingHours = { ...settings.workingHours };
+
+    dayOrder.forEach((day) => {
+      workingHours[day] = {
+        open: String(formData.get(`${day}-open`) || "09:00"),
+        close: String(formData.get(`${day}-close`) || "19:00"),
+        closed: formData.get(`${day}-closed`) === "on"
+      };
+    });
+
+    const response = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-password": sessionPassword
+      },
+      body: JSON.stringify({
+        slotMinutes: Number(formData.get("slotMinutes") || settings.slotMinutes),
+        workingHours
+      })
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setMessage(result.message || "İşletme ayarları güncellenemedi.");
+      return;
+    }
+
+    setMessage("İşletme ayarları güncellendi.");
+    setSettings(result.settings);
+  }
+
+  async function addClosedBlock(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const response = await fetch("/api/settings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-password": sessionPassword
+      },
+      body: JSON.stringify(Object.fromEntries(formData))
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setMessage(result.message || "Kapalı saat eklenemedi.");
+      return;
+    }
+
+    setMessage("Saat aralığı randevuya kapatıldı.");
+    setSettings(result.settings);
+    form.reset();
+  }
+
+  async function removeClosedBlock(id: string) {
+    const response = await fetch(`/api/settings?id=${id}`, {
+      method: "DELETE",
+      headers: { "x-admin-password": sessionPassword }
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setMessage(result.message || "Kapalı saat silinemedi.");
+      return;
+    }
+
+    setMessage("Kapalı saat kaldırıldı.");
+    setSettings(result.settings);
   }
 
   async function updateStatus(id: string, status: AppointmentStatus) {
@@ -350,6 +447,10 @@ export default function AdminPanel() {
           <strong>{stats.pets}</strong>
           <span>Pet kaydı</span>
         </div>
+        <div className="statCard warm">
+          <strong>{stats.closedBlocks}</strong>
+          <span>Kapalı saat</span>
+        </div>
       </div>
 
       <section className="adminOpsGrid">
@@ -426,26 +527,31 @@ export default function AdminPanel() {
           <button className={tab === "customers" ? "adminTab active" : "adminTab"} onClick={() => setTab("customers")}>
             <Users size={17} /> Müşteriler <span className="tabCount">{customers.length}</span>
           </button>
-        </div>
-        <div className="adminFilters">
-          <label className="searchBox">
-            <Search size={17} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Müşteri, pet, telefon veya hizmet ara" />
-          </label>
-          {tab === "appointments" && (
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | AppointmentStatus)}>
-              <option value="all">Tüm durumlar</option>
-              {Object.entries(statusLabels).map(([value, label]) => (
-                <option value={value} key={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          )}
-          <button className="iconButton" onClick={() => loadAll()} disabled={loading} title="Yenile">
-            {loading ? <Loader2 size={18} className="spin" /> : <RefreshCw size={18} />}
+          <button className={tab === "business" ? "adminTab active" : "adminTab"} onClick={() => setTab("business")}>
+            <Settings size={17} /> İşletme
           </button>
         </div>
+        {tab !== "business" && (
+          <div className="adminFilters">
+            <label className="searchBox">
+              <Search size={17} />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Müşteri, pet, telefon veya hizmet ara" />
+            </label>
+            {tab === "appointments" && (
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | AppointmentStatus)}>
+                <option value="all">Tüm durumlar</option>
+                {Object.entries(statusLabels).map(([value, label]) => (
+                  <option value={value} key={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button className="iconButton" onClick={() => loadAll()} disabled={loading} title="Yenile">
+              {loading ? <Loader2 size={18} className="spin" /> : <RefreshCw size={18} />}
+            </button>
+          </div>
+        )}
       </div>
 
       {message && <p className="formMessage adminMessage">{message}</p>}
@@ -553,7 +659,7 @@ export default function AdminPanel() {
             )}
           </div>
         </section>
-      ) : (
+      ) : tab === "customers" ? (
         <section className="customerAdminGrid">
           <div className="customerForms">
             <form className="adminForm" onSubmit={createCustomer}>
@@ -672,6 +778,93 @@ export default function AdminPanel() {
                 </div>
               </div>
             )}
+          </div>
+        </section>
+      ) : (
+        <section className="businessGrid">
+          <form className="adminForm businessHoursForm" onSubmit={saveWorkingHours}>
+            <div className="formHeader">
+              <Settings size={22} />
+              <div>
+                <h2>Çalışma saatleri</h2>
+                <p>Online randevu saatleri bu plana göre oluşur.</p>
+              </div>
+            </div>
+            <label className="compactField">
+              <span>Randevu aralığı</span>
+              <select name="slotMinutes" defaultValue={settings?.slotMinutes || 60}>
+                <option value="30">30 dakika</option>
+                <option value="45">45 dakika</option>
+                <option value="60">60 dakika</option>
+                <option value="90">90 dakika</option>
+              </select>
+            </label>
+            <div className="hoursTable">
+              {settings &&
+                dayOrder.map((day) => (
+                  <div className="hoursRow" key={day}>
+                    <label className="dayToggle">
+                      <input name={`${day}-closed`} type="checkbox" defaultChecked={settings.workingHours[day].closed} />
+                      <span>{dayLabels[day]}</span>
+                    </label>
+                    <input name={`${day}-open`} type="time" defaultValue={settings.workingHours[day].open} />
+                    <input name={`${day}-close`} type="time" defaultValue={settings.workingHours[day].close} />
+                  </div>
+                ))}
+            </div>
+            <button className="submitButton">
+              <CheckCircle2 size={18} /> Saatleri Kaydet
+            </button>
+          </form>
+
+          <div className="businessSide">
+            <form className="adminForm closedBlockForm" onSubmit={addClosedBlock}>
+              <div className="formHeader">
+                <CalendarX2 size={22} />
+                <div>
+                  <h2>Saat kapat</h2>
+                  <p>İş, mola veya özel durumlar için belirli aralıkları randevuya kapatın.</p>
+                </div>
+              </div>
+              <div className="formGrid">
+                <input name="date" type="date" required defaultValue={today} />
+                <input name="startTime" type="time" required defaultValue="12:00" />
+                <input name="endTime" type="time" required defaultValue="13:00" />
+                <input name="reason" placeholder="Sebep: mola, dış iş..." />
+              </div>
+              <button className="submitButton">
+                <CalendarX2 size={18} /> Aralığı Kapat
+              </button>
+            </form>
+
+            <div className="calendarPanel closedBlockPanel">
+              <div className="panelHeader">
+                <div>
+                  <h2>Kapalı saatler</h2>
+                  <p>{settings?.closedBlocks.length || 0} kayıt</p>
+                </div>
+              </div>
+              <div className="closedBlockList">
+                {settings?.closedBlocks.length ? (
+                  settings.closedBlocks
+                    .slice()
+                    .sort((a, b) => `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`))
+                    .map((block) => (
+                      <article className="closedBlockCard" key={block.id}>
+                        <span>
+                          <strong>{block.date}</strong>
+                          <small>{block.startTime} - {block.endTime} · {block.reason}</small>
+                        </span>
+                        <button className="iconButton danger" type="button" onClick={() => removeClosedBlock(block.id)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </article>
+                    ))
+                ) : (
+                  <p className="emptyState">Kapalı saat tanımlı değil.</p>
+                )}
+              </div>
+            </div>
           </div>
         </section>
       )}
