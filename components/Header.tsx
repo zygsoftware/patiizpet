@@ -23,7 +23,7 @@ export default function Header({ solid = false }: { solid?: boolean }) {
     <header className={`siteHeader${solid ? " solid" : ""}${open ? " open" : ""}`}>
       <div className="navShell">
         <Link className="brand" href="/" aria-label="Patiizpet ana sayfa" onClick={() => setOpen(false)}>
-          <Image src="/logo-mark.png" alt="Patiizpet" width={720} height={158} priority className="brandLogo" />
+          <Image src="/logo.png" alt="Patiizpet" width={2048} height={767} priority className="brandLogo" />
         </Link>
 
         <nav className="mainNav" aria-label="Ana menü">

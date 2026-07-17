@@ -12,10 +12,11 @@ export default function JsonLd() {
         telephone: site.phone,
         email: site.email,
         image: [`${site.url}/slider-1.png`, `${site.url}/slider-2.png`, `${site.url}/pet-grooming-hero.png`],
-        logo: `${site.url}/logo-mark.png`,
+        logo: `${site.url}/logo.png`,
         address: {
           "@type": "PostalAddress",
-          addressLocality: site.city,
+          streetAddress: site.displayAddress,
+          addressLocality: site.cityName,
           addressCountry: site.country
         },
         geo: {
@@ -25,9 +26,9 @@ export default function JsonLd() {
         },
         areaServed: {
           "@type": "City",
-          name: site.city
+          name: site.cityName
         },
-        sameAs: [site.instagram],
+        sameAs: [site.instagram, site.facebook],
         priceRange: "₺₺",
         description: site.description,
         openingHoursSpecification: [
@@ -44,7 +45,7 @@ export default function JsonLd() {
             "@type": "Service",
             name: service.title,
             description: service.summary,
-            areaServed: site.city
+            areaServed: site.cityName
           }
         }))
       },

@@ -4419,3 +4419,26 @@ body,
     flex-direction: column;
   }
 }
+
+/* ---------- Updated brand assets ---------- */
+.brandLogo {
+  height: clamp(31px, 3.1vw, 39px);
+  width: auto;
+  object-fit: contain;
+}
+
+.footerLogo {
+  width: clamp(132px, 13vw, 176px);
+  height: auto;
+  object-fit: contain;
+}
+
+.footerBrand {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 760px) {
+  .brandLogo {
+    height: 30px;
+  }
+}

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { site } from "@/lib/site";
 
 export default function Footer() {
@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="footerInner">
         <div>
           <Link className="footerBrand" href="/" aria-label="Patiizpet ana sayfa">
-            <Image src="/logo-mark.png" alt="Patiizpet Pet Kuaförü" width={720} height={158} className="footerLogo" />
+            <Image src="/logo-buyuk.png" alt="Patiizpet Pet Kuaförü" width={1254} height={1254} className="footerLogo" />
           </Link>
           <p>{site.description}</p>
         </div>
@@ -28,10 +28,13 @@ export default function Footer() {
             <Mail size={16} /> {site.email}
           </a>
           <span>
-            <MapPin size={16} /> {site.address}
+            <MapPin size={16} /> {site.displayAddress}
           </span>
-          <a href={site.instagram}>
-            <Instagram size={16} /> Instagram
+          <a href={site.instagram} target="_blank" rel="noreferrer">
+            <Instagram size={16} /> {site.instagramHandle}
+          </a>
+          <a href={site.facebook} target="_blank" rel="noreferrer">
+            <MessageCircle size={16} /> Facebook
           </a>
         </address>
       </div>

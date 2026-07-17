@@ -14,7 +14,7 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "tr-TR",
     icons: [
       {
-        src: "/logo-mark.png",
+        src: "/logo.png",
         sizes: "512x512",
         type: "image/png"
       },

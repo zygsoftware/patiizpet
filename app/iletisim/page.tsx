@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { faq, site } from "@/lib/site";
@@ -31,10 +31,13 @@ export default function ContactPage() {
             <Mail size={20} /> {site.email}
           </a>
           <span>
-            <MapPin size={20} /> {site.address}
+            <MapPin size={20} /> {site.displayAddress}
           </span>
-          <a href={site.instagram}>
-            <Instagram size={20} /> Instagram
+          <a href={site.instagram} target="_blank" rel="noreferrer">
+            <Instagram size={20} /> {site.instagramHandle}
+          </a>
+          <a href={site.facebook} target="_blank" rel="noreferrer">
+            <MessageCircle size={20} /> Facebook
           </a>
           <Link className="primaryButton" href="/randevu">
             Online Randevu Al
