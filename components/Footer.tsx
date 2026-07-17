@@ -38,7 +38,16 @@ export default function Footer() {
           </a>
         </address>
       </div>
-      <div className="footerBottom">© {new Date().getFullYear()} Patiizpet. Tüm hakları saklıdır.</div>
+      <div className="footerBottom">
+        <span>© {new Date().getFullYear()} Patiizpet. Tüm hakları saklıdır.</span>
+        <span>
+          Bu websitesi{" "}
+          <a href="https://zygsoft.com" target="_blank" rel="noreferrer">
+            zygsoft.com
+          </a>{" "}
+          tarafından yapıldı.
+        </span>
+      </div>
     </footer>
   );
 }
