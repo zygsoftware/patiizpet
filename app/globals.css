@@ -4442,3 +4442,225 @@ body,
     height: 30px;
   }
 }
+
+/* ---------- Admin contrast refresh ---------- */
+.adminPageRoot {
+  background:
+    radial-gradient(circle at 4% 4%, rgba(238, 140, 127, 0.14), transparent 24vw),
+    radial-gradient(circle at 96% 8%, rgba(50, 92, 122, 0.12), transparent 28vw),
+    linear-gradient(135deg, #fffaf6 0%, #f7f0e8 48%, #eef3f0 100%);
+}
+
+.premiumAdminHero {
+  border: 1px solid rgba(79, 49, 32, 0.18);
+  background:
+    linear-gradient(115deg, rgba(255, 253, 249, 0.98) 0%, rgba(255, 248, 240, 0.94) 52%, rgba(238, 224, 211, 0.82) 100%),
+    url("/heroes/heroes.png") right -64px center / 390px auto no-repeat;
+  box-shadow: 0 24px 70px -48px rgba(79, 49, 32, 0.55);
+}
+
+.premiumAdminHero::after {
+  background: linear-gradient(90deg, rgba(255, 253, 249, 0.98) 0%, rgba(255, 253, 249, 0.9) 58%, rgba(255, 253, 249, 0.42) 100%);
+}
+
+.premiumAdminHero .sectionLabel,
+.opsPanel .sectionLabel {
+  color: #c75f52;
+}
+
+.storageNotice.isPersistent {
+  border-color: rgba(41, 112, 84, 0.26);
+  background: #eaf7ee;
+  color: #2f6f51;
+}
+
+.statCard {
+  position: relative;
+  overflow: hidden;
+  border-width: 1px;
+  background: #fffdf9;
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: #6f6259;
+}
+
+.statRow .statCard:nth-child(1) {
+  background: #f4f1ee;
+  border-color: #d5cbc2;
+}
+
+.statRow .statCard:nth-child(1)::before {
+  background: #4f4841;
+}
+
+.statRow .statCard:nth-child(2) {
+  background: #fff0ec;
+  border-color: #f1b6ad;
+}
+
+.statRow .statCard:nth-child(2)::before {
+  background: #d75f50;
+}
+
+.statRow .statCard:nth-child(3) {
+  background: #edf8f1;
+  border-color: #acd8bd;
+}
+
+.statRow .statCard:nth-child(3)::before {
+  background: #2f8b57;
+}
+
+.statRow .statCard:nth-child(4) {
+  background: #fff5e5;
+  border-color: #e7c28b;
+}
+
+.statRow .statCard:nth-child(4)::before {
+  background: #bd7a28;
+}
+
+.statRow .statCard:nth-child(5) {
+  background: #f0f1ff;
+  border-color: #bbbff0;
+}
+
+.statRow .statCard:nth-child(5)::before {
+  background: #646bc5;
+}
+
+.statRow .statCard:nth-child(6) {
+  background: #eef6fb;
+  border-color: #afd2e6;
+}
+
+.statRow .statCard:nth-child(6)::before {
+  background: #347da2;
+}
+
+.statCard strong {
+  color: #24211f;
+}
+
+.statCard span {
+  color: #625b54;
+}
+
+.opsPanel {
+  position: relative;
+  overflow: hidden;
+  border-width: 1px;
+}
+
+.opsPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 5px;
+}
+
+.pendingPanel {
+  border-color: rgba(215, 95, 80, 0.3);
+  background:
+    linear-gradient(135deg, rgba(255, 247, 244, 0.98), rgba(255, 234, 229, 0.9)),
+    url("/heroes/hero-1.png") right 18px bottom -20px / 126px auto no-repeat;
+}
+
+.pendingPanel::before {
+  background: #d75f50;
+}
+
+.todayPanel {
+  border-color: rgba(47, 139, 87, 0.28);
+  background:
+    linear-gradient(135deg, rgba(240, 250, 244, 0.98), rgba(221, 241, 230, 0.9)),
+    url("/heroes/hero-3.png") right -16px bottom -26px / 142px auto no-repeat;
+}
+
+.todayPanel::before {
+  background: #2f8b57;
+}
+
+.opsBadge.hot,
+.opsBadge {
+  border-color: rgba(215, 95, 80, 0.22);
+  background: #fffdf9;
+  color: #d75f50;
+}
+
+.adminTabs {
+  border-color: rgba(79, 49, 32, 0.14);
+  background: #fffdf9;
+  box-shadow: 0 12px 32px -28px rgba(79, 49, 32, 0.45);
+}
+
+.adminTab {
+  color: #5b5149;
+}
+
+.adminTab:nth-child(1).active {
+  background: #2a2926;
+  color: #fffaf5;
+}
+
+.adminTab:nth-child(2).active {
+  background: #bd7a28;
+  color: #fffaf5;
+}
+
+.adminTab:nth-child(3).active {
+  background: #347da2;
+  color: #fffaf5;
+}
+
+.adminForm {
+  border-color: rgba(215, 95, 80, 0.18);
+  background: #fffaf6;
+}
+
+.calendarPanel {
+  border-color: rgba(52, 125, 162, 0.18);
+  background: #fbfdff;
+}
+
+.dailyPlanner {
+  border-color: rgba(52, 125, 162, 0.22);
+  background:
+    linear-gradient(135deg, rgba(247, 252, 255, 0.98), rgba(235, 244, 249, 0.92)),
+    radial-gradient(circle at 100% 0%, rgba(52, 125, 162, 0.12), transparent 220px);
+}
+
+.businessHoursForm {
+  border-color: rgba(47, 139, 87, 0.22);
+  background: #f4fbf6;
+}
+
+.closedBlockForm,
+.closedBlockPanel {
+  border-color: rgba(215, 95, 80, 0.22);
+  background: #fff5f1;
+}
+
+.customerPanel {
+  border-color: rgba(189, 122, 40, 0.22);
+  background: #fffaf0;
+}
+
+.appointmentCard,
+.requestCard,
+.timelineItem,
+.customerCard,
+.closedBlockCard {
+  border-color: rgba(111, 98, 89, 0.14);
+  background: #ffffff;
+}
+
+.appointmentMeta small {
+  background: #f7f3ee;
+  border-color: #e3d8cc;
+}
