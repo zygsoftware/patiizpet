@@ -3,25 +3,31 @@ import { createAppointment, listAppointments, listPublicAppointments } from "@/l
 import { hasAdminHeader, isAdminRequest } from "@/lib/auth";
 import { upsertCustomerFromAppointment } from "@/lib/customers";
 
+function json(data: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "no-store, max-age=0");
+  return NextResponse.json(data, { ...init, headers });
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date") || undefined;
 
   if (hasAdminHeader(request) && !isAdminRequest(request)) {
-    return NextResponse.json({ message: "Admin şifresi hatalı." }, { status: 401 });
+    return json({ message: "Admin şifresi hatalı." }, { status: 401 });
   }
 
   if (isAdminRequest(request)) {
-    return NextResponse.json({ appointments: await listAppointments() });
+    return json({ appointments: await listAppointments() });
   }
 
-  return NextResponse.json({ appointments: await listPublicAppointments(date) });
+  return json({ appointments: await listPublicAppointments(date) });
 }
 
 export async function POST(request: NextRequest) {
   try {
     if (hasAdminHeader(request) && !isAdminRequest(request)) {
-      return NextResponse.json({ message: "Admin şifresi hatalı." }, { status: 401 });
+      return json({ message: "Admin şifresi hatalı." }, { status: 401 });
     }
 
     const body = await request.json();
@@ -42,9 +48,9 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({ appointment }, { status: 201 });
+    return json({ appointment }, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
+    return json(
       { message: error instanceof Error ? error.message : "Randevu kaydedilemedi." },
       { status: 400 }
     );

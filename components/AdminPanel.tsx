@@ -138,9 +138,9 @@ export default function AdminPanel() {
     if (!activePassword) return false;
     setLoading(true);
     const [appointmentResponse, customerResponse, settingsResponse] = await Promise.all([
-      fetch("/api/appointments", { headers: { "x-admin-password": activePassword } }),
-      fetch("/api/customers", { headers: { "x-admin-password": activePassword } }),
-      fetch("/api/settings", { headers: { "x-admin-password": activePassword } })
+      fetch("/api/appointments", { cache: "no-store", headers: { "x-admin-password": activePassword } }),
+      fetch("/api/customers", { cache: "no-store", headers: { "x-admin-password": activePassword } }),
+      fetch("/api/settings", { cache: "no-store", headers: { "x-admin-password": activePassword } })
     ]);
     const appointmentData = await appointmentResponse.json();
     const customerData = await customerResponse.json();
@@ -608,17 +608,21 @@ export default function AdminPanel() {
                     </h3>
                     {items.map((item) => (
                       <article className={`appointmentCard${item.date === today ? " isToday" : ""}`} key={item.id}>
-                        <div>
-                          <strong>
-                            <Clock size={15} /> {item.startTime} - {item.endTime}
-                          </strong>
-                          <span>
+                        <div className="appointmentMain">
+                          <div className="appointmentTop">
+                            <strong>
+                              <Clock size={15} /> {item.startTime} - {item.endTime}
+                            </strong>
+                            <span className={`statusPill ${item.status}`}>{statusLabels[item.status]}</span>
+                          </div>
+                          <span className="appointmentName">
                             {item.customerName} / {item.petName} ({item.petType})
                           </span>
-                          <small>
-                            {item.phone} · {item.service} · {statusLabels[item.status]} ·{" "}
-                            {item.source === "admin" ? "Manuel" : "Online"}
-                          </small>
+                          <div className="appointmentMeta">
+                            <small>{item.phone}</small>
+                            <small>{item.service}</small>
+                            <small>{item.source === "admin" ? "Manuel" : "Online"}</small>
+                          </div>
                           {item.notes && <p>{item.notes}</p>}
                         </div>
                         <div className="cardActions">
@@ -630,6 +634,11 @@ export default function AdminPanel() {
                           {item.status === "confirmed" && (
                             <button className="quickDone" type="button" onClick={() => updateStatus(item.id, "completed")}>
                               Tamamlandı
+                            </button>
+                          )}
+                          {item.status !== "cancelled" && item.status !== "completed" && (
+                            <button className="quickCancel" type="button" onClick={() => updateStatus(item.id, "cancelled")}>
+                              İptal
                             </button>
                           )}
                           <select

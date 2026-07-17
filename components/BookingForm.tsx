@@ -55,7 +55,7 @@ export default function BookingForm() {
 
   useEffect(() => {
     setLoadingSlots(true);
-    Promise.all([fetch(`/api/appointments?date=${date}`), fetch("/api/settings")])
+    Promise.all([fetch(`/api/appointments?date=${date}`, { cache: "no-store" }), fetch("/api/settings", { cache: "no-store" })])
       .then(async ([appointmentsResponse, settingsResponse]) => {
         const appointmentsData = await appointmentsResponse.json();
         const settingsData = await settingsResponse.json();
@@ -77,7 +77,7 @@ export default function BookingForm() {
   const isBusy = (start: string, end: string) => booked.some((item) => overlaps(start, end, item.startTime, item.endTime));
 
   async function refreshBooked() {
-    const refresh = await fetch(`/api/appointments?date=${date}`);
+    const refresh = await fetch(`/api/appointments?date=${date}`, { cache: "no-store" });
     const data = await refresh.json();
     setBooked(data.appointments || []);
   }
