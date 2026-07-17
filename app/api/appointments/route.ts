@@ -10,18 +10,25 @@ function json(data: unknown, init?: ResponseInit) {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const date = searchParams.get("date") || undefined;
+  try {
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get("date") || undefined;
 
-  if (hasAdminHeader(request) && !isAdminRequest(request)) {
-    return json({ message: "Admin şifresi hatalı." }, { status: 401 });
+    if (hasAdminHeader(request) && !isAdminRequest(request)) {
+      return json({ message: "Admin şifresi hatalı." }, { status: 401 });
+    }
+
+    if (isAdminRequest(request)) {
+      return json({ appointments: await listAppointments() });
+    }
+
+    return json({ appointments: await listPublicAppointments(date) });
+  } catch (error) {
+    return json({
+      appointments: [],
+      warning: error instanceof Error ? error.message : "Randevular okunamadı."
+    });
   }
-
-  if (isAdminRequest(request)) {
-    return json({ appointments: await listAppointments() });
-  }
-
-  return json({ appointments: await listPublicAppointments(date) });
 }
 
 export async function POST(request: NextRequest) {

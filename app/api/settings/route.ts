@@ -10,7 +10,31 @@ function json(data: unknown, init?: ResponseInit) {
 }
 
 export async function GET() {
-  return json({ settings: await getBusinessSettings(), storage: storageStatus() });
+  try {
+    return json({ settings: await getBusinessSettings(), storage: storageStatus() });
+  } catch (error) {
+    return json(
+      {
+        settings: {
+          slotMinutes: 60,
+          workingHours: {
+            monday: { open: "09:00", close: "19:00", closed: false },
+            tuesday: { open: "09:00", close: "19:00", closed: false },
+            wednesday: { open: "09:00", close: "19:00", closed: false },
+            thursday: { open: "09:00", close: "19:00", closed: false },
+            friday: { open: "09:00", close: "19:00", closed: false },
+            saturday: { open: "09:00", close: "19:00", closed: false },
+            sunday: { open: "09:00", close: "18:00", closed: true }
+          },
+          closedBlocks: [],
+          updatedAt: new Date().toISOString()
+        },
+        storage: storageStatus(),
+        warning: error instanceof Error ? error.message : "Ayarlar okunamadı."
+      },
+      { status: 200 }
+    );
+  }
 }
 
 export async function PATCH(request: NextRequest) {
