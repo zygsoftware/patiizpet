@@ -121,86 +121,99 @@ export default function BookingForm() {
   }
 
   return (
-    <form className="bookingForm" onSubmit={handleSubmit}>
+    <form className="bookingForm bookingStepper" onSubmit={handleSubmit}>
       <div className="formHeader">
         <PawPrint size={24} />
         <div>
           <h3>Randevu bilgileri</h3>
-          <p>Müsait saatler seçilen tarihe göre güncellenir.</p>
+          <p>Tarih, saat, dostunuzun bilgileri ve hizmet seçimini birkaç adımda tamamlayın.</p>
         </div>
       </div>
 
-      <label>
-        <span>Tarih</span>
-        <div className="inputWithIcon">
-          <CalendarDays size={18} />
-          <input type="date" value={date} min={today} onChange={(event) => setDate(event.target.value)} />
-        </div>
-      </label>
+      <div className="bookingSteps">
+        <section className="bookingStep">
+          <span className="stepBadge">1</span>
+          <label>
+            <span>Tarih</span>
+            <div className="inputWithIcon">
+              <CalendarDays size={18} />
+              <input type="date" value={date} min={today} onChange={(event) => setDate(event.target.value)} />
+            </div>
+          </label>
+        </section>
 
-      <div className="slotBlock">
-        <span className="fieldLabel">Saat</span>
-        {loadingSlots ? (
-          <div className="loadingLine">
-            <Loader2 size={18} className="spin" /> Saatler kontrol ediliyor
+        <section className="bookingStep">
+          <span className="stepBadge">2</span>
+          <div className="slotBlock">
+            <span className="fieldLabel">Saat</span>
+            {loadingSlots ? (
+              <div className="loadingLine">
+                <Loader2 size={18} className="spin" /> Saatler kontrol ediliyor
+              </div>
+            ) : (
+              <div className="slotGrid">
+                {slots.length === 0 && <p className="emptyState">Bu gün için randevu alınamıyor.</p>}
+                {slots.map(([start, end]) => {
+                  const value = `${start}-${end}`;
+                  const disabled = isBusy(start, end);
+                  return (
+                    <button
+                      type="button"
+                      className={slot === value ? "slot active" : "slot"}
+                      disabled={disabled}
+                      key={value}
+                      onClick={() => setSlot(value)}
+                      title={disabled ? "Bu saat dolu veya kapalı" : `${start} - ${end}`}
+                    >
+                      <Clock size={15} />
+                      <span>{start} - {end}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="slotGrid">
-            {slots.length === 0 && <p className="emptyState">Bu gün için randevu alınamıyor.</p>}
-            {slots.map(([start, end]) => {
-              const value = `${start}-${end}`;
-              const disabled = isBusy(start, end);
-              return (
-                <button
-                  type="button"
-                  className={slot === value ? "slot active" : "slot"}
-                  disabled={disabled}
-                  key={value}
-                  onClick={() => setSlot(value)}
-                  title={disabled ? "Bu saat dolu veya kapalı" : `${start} - ${end}`}
-                >
-                  <Clock size={15} />
-                  <span>{start} - {end}</span>
-                </button>
-              );
-            })}
+        </section>
+
+        <section className="bookingStep">
+          <span className="stepBadge">3</span>
+          <div className="formGrid">
+            <label>
+              <span>Ad soyad</span>
+              <input name="customerName" required placeholder="Adınız" autoComplete="name" />
+            </label>
+            <label>
+              <span>Telefon</span>
+              <input name="phone" required placeholder="05xx xxx xx xx" autoComplete="tel" />
+            </label>
+            <label>
+              <span>Dostunuzun adı</span>
+              <input name="petName" required placeholder="Pati" />
+            </label>
+            <label>
+              <span>Tür / ırk</span>
+              <input name="petType" required placeholder="Maltese, kedi..." />
+            </label>
           </div>
-        )}
+        </section>
+
+        <section className="bookingStep">
+          <span className="stepBadge">4</span>
+          <label>
+            <span>Hizmet</span>
+            <select name="service" required defaultValue="Komple bakım">
+              <option>Komple bakım</option>
+              <option>Banyo ve kurutma</option>
+              <option>Makas tıraşı</option>
+              <option>Tırnak ve pati bakımı</option>
+            </select>
+          </label>
+          <label>
+            <span>Not</span>
+            <textarea name="notes" rows={4} placeholder="Özel hassasiyet, tüy durumu veya ek not" />
+          </label>
+        </section>
       </div>
-
-      <div className="formGrid">
-        <label>
-          <span>Ad soyad</span>
-          <input name="customerName" required placeholder="Adınız" autoComplete="name" />
-        </label>
-        <label>
-          <span>Telefon</span>
-          <input name="phone" required placeholder="05xx xxx xx xx" autoComplete="tel" />
-        </label>
-        <label>
-          <span>Dostunuzun adı</span>
-          <input name="petName" required placeholder="Pati" />
-        </label>
-        <label>
-          <span>Tür / ırk</span>
-          <input name="petType" required placeholder="Maltese, kedi..." />
-        </label>
-      </div>
-
-      <label>
-        <span>Hizmet</span>
-        <select name="service" required defaultValue="Komple bakım">
-          <option>Komple bakım</option>
-          <option>Banyo ve kurutma</option>
-          <option>Makas tıraşı</option>
-          <option>Tırnak ve pati bakımı</option>
-        </select>
-      </label>
-
-      <label>
-        <span>Not</span>
-        <textarea name="notes" rows={4} placeholder="Özel hassasiyet, tüy durumu veya ek not" />
-      </label>
 
       <button className="submitButton" disabled={submitting || slots.length === 0 || isBusy(selectedStart, selectedEnd)}>
         {submitting ? <Loader2 size={18} className="spin" /> : <Check size={18} />}

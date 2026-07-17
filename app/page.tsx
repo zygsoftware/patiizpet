@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import HeroSlider from "@/components/HeroSlider";
 import JsonLd from "@/components/JsonLd";
-import { gallery, services, site, testimonials } from "@/lib/site";
+import { beforeAfter, gallery, services, site, testimonials } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Patiizpet | İzmir Pet Kuaförü ve Online Randevu",
@@ -158,6 +158,28 @@ export default function Home() {
               />
             </figure>
           ))}
+        </div>
+      </section>
+
+      <section className="section beforeAfterStory scrollSection">
+        <div className="sectionHead">
+          <div>
+            <span className="sectionLabel">Önce / Sonra</span>
+            <h2>Bakım farkını net gösteren dönüşümler</h2>
+          </div>
+          <Link className="secondaryButton" href="/randevu">
+            Randevu Planla
+          </Link>
+        </div>
+        <div className="beforeAfterGrid">
+          <figure>
+            <Image src={beforeAfter.before.src} alt={beforeAfter.before.alt} fill sizes="(max-width: 900px) 50vw, 36vw" />
+            <figcaption>Önce</figcaption>
+          </figure>
+          <figure>
+            <Image src={beforeAfter.after.src} alt={beforeAfter.after.alt} fill sizes="(max-width: 900px) 50vw, 36vw" />
+            <figcaption>Sonra</figcaption>
+          </figure>
         </div>
       </section>
 

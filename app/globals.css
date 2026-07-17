@@ -4864,3 +4864,386 @@ body,
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Premium design pass ---------- */
+:root {
+  --patiiz-coffee: #3f2619;
+  --patiiz-espresso: #241710;
+  --patiiz-rose: #e8a092;
+  --patiiz-coral: #d86b5c;
+  --patiiz-gold: #c99a4f;
+  --patiiz-cream: #fff8ef;
+  --patiiz-cream-2: #f5eadf;
+  --patiiz-sage: #6f9a83;
+  --patiiz-sky: #5f91ad;
+}
+
+body {
+  color: var(--patiiz-espresso);
+  background: var(--patiiz-cream);
+}
+
+.siteHeader {
+  position: sticky;
+  top: 10px;
+  z-index: 50;
+  padding-inline: clamp(12px, 3vw, 26px);
+}
+
+.navShell {
+  min-height: 76px;
+  border: 1px solid rgba(63, 38, 25, 0.16);
+  background: rgba(255, 250, 244, 0.88);
+  box-shadow: 0 24px 70px -48px rgba(63, 38, 25, 0.55);
+  backdrop-filter: blur(22px);
+}
+
+.mainNav a {
+  color: #5e4d42;
+}
+
+.mainNav a.active {
+  color: var(--patiiz-coffee);
+  background: rgba(232, 160, 146, 0.18);
+}
+
+.primaryButton,
+.submitButton {
+  background: linear-gradient(135deg, var(--patiiz-coffee), var(--patiiz-espresso));
+  color: #fffaf4;
+}
+
+.primaryButton:hover,
+.submitButton:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.secondaryButton,
+.ghostButton {
+  border-color: rgba(63, 38, 25, 0.16);
+  color: var(--patiiz-coffee);
+  background: rgba(255, 250, 244, 0.72);
+}
+
+.warmHero {
+  min-height: clamp(650px, 82vh, 820px);
+  background: #f8eee5;
+}
+
+.heroSlider::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 248, 240, 0.94) 0%, rgba(255, 248, 240, 0.74) 38%, rgba(255, 248, 240, 0.16) 72%),
+    linear-gradient(0deg, rgba(255, 248, 240, 0.76) 0%, transparent 34%);
+}
+
+.heroSlide {
+  filter: saturate(0.94) contrast(0.96) sepia(0.08);
+  transform: scale(1.02);
+  transition: opacity 0.8s ease, transform 5.2s ease;
+}
+
+.heroSlide.active {
+  transform: scale(1.06);
+}
+
+.heroCopy {
+  max-width: min(680px, 92vw);
+}
+
+.heroCopy h1 {
+  color: var(--patiiz-espresso);
+  font-size: clamp(48px, 7vw, 86px);
+  line-height: 0.98;
+}
+
+.heroCopy p {
+  max-width: 600px;
+  color: #5f5149;
+}
+
+.section {
+  scroll-margin-top: 100px;
+}
+
+.serviceCard,
+.testimonialCard,
+.storyPanel,
+.imageFrame,
+.galleryItem,
+.ctaBand {
+  animation: softReveal both;
+  animation-timeline: view();
+  animation-range: entry 8% cover 28%;
+}
+
+@keyframes softReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.beforeAfterStory {
+  background:
+    linear-gradient(135deg, rgba(255, 248, 239, 0.95), rgba(246, 232, 219, 0.72)),
+    radial-gradient(circle at 90% 8%, rgba(201, 154, 79, 0.16), transparent 260px);
+}
+
+.beforeAfterGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 22px);
+}
+
+.beforeAfterGrid figure {
+  position: relative;
+  min-height: clamp(240px, 34vw, 430px);
+  overflow: hidden;
+  border: 1px solid rgba(63, 38, 25, 0.16);
+  border-radius: 24px;
+  background: #fffaf5;
+}
+
+.beforeAfterGrid img {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.beforeAfterGrid figure:hover img {
+  transform: scale(1.04);
+}
+
+.beforeAfterGrid figcaption {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  border-radius: 999px;
+  padding: 9px 14px;
+  color: #fffaf5;
+  background: rgba(36, 23, 16, 0.78);
+  font-size: 13px;
+  font-weight: 850;
+  backdrop-filter: blur(12px);
+}
+
+.bookingStepper {
+  background:
+    linear-gradient(135deg, rgba(255, 253, 249, 0.98), rgba(255, 245, 237, 0.94)),
+    radial-gradient(circle at 100% 0%, rgba(232, 160, 146, 0.14), transparent 240px);
+}
+
+.bookingSteps {
+  display: grid;
+  gap: 14px;
+}
+
+.bookingStep {
+  position: relative;
+  border: 1px solid rgba(63, 38, 25, 0.12);
+  border-radius: 20px;
+  padding: 16px;
+  background: #fffdf9;
+}
+
+.stepBadge {
+  position: absolute;
+  top: -11px;
+  left: 16px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: #fffaf5;
+  background: var(--patiiz-coral);
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 8px 22px -12px rgba(216, 107, 92, 0.7);
+}
+
+.bookingStep > label,
+.bookingStep .slotBlock {
+  margin-top: 4px;
+}
+
+.slot {
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.slot:not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: rgba(216, 107, 92, 0.42);
+}
+
+.slot.active {
+  color: #fffaf5;
+  background: var(--patiiz-coffee);
+  border-color: var(--patiiz-coffee);
+}
+
+.adminShell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.adminToolbar {
+  position: sticky;
+  top: 12px;
+  z-index: 15;
+  border: 1px solid rgba(63, 38, 25, 0.12);
+  border-radius: 22px;
+  padding: 10px;
+  background: rgba(255, 250, 244, 0.88);
+  box-shadow: 0 22px 60px -48px rgba(63, 38, 25, 0.58);
+  backdrop-filter: blur(20px);
+}
+
+.adminTabs {
+  border-radius: 16px;
+}
+
+.adminTab:nth-child(4).active {
+  background: var(--patiiz-coral);
+  color: #fffaf5;
+}
+
+.adminGrid,
+.customerAdminGrid,
+.businessGrid,
+.galleryAdminGrid {
+  animation: panelRise 0.28s ease both;
+}
+
+@keyframes panelRise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (min-width: 1120px) {
+  .adminShell {
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .adminHero,
+  .storageNotice,
+  .statRow,
+  .adminOpsGrid {
+    grid-column: 1 / -1;
+  }
+
+  .adminToolbar {
+    grid-column: 1;
+    grid-row: 5 / span 4;
+    grid-template-columns: 1fr;
+    align-self: start;
+    padding: 12px;
+  }
+
+  .adminGrid,
+  .customerAdminGrid,
+  .businessGrid,
+  .galleryAdminGrid,
+  .adminMessage {
+    grid-column: 2;
+  }
+
+  .adminTabs {
+    width: 100%;
+    display: grid;
+    border-radius: 18px;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    gap: 8px;
+    box-shadow: none;
+  }
+
+  .adminTab {
+    justify-content: flex-start;
+    min-height: 44px;
+    border-radius: 14px;
+    padding-inline: 14px;
+    background: rgba(255, 253, 249, 0.72);
+    border: 1px solid rgba(63, 38, 25, 0.1);
+  }
+
+  .adminToolbar .adminFilters {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-top: 12px;
+  }
+
+  .adminToolbar .searchBox,
+  .adminToolbar select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .siteHeader {
+    top: 0;
+    padding-inline: 0;
+  }
+
+  .navShell {
+    min-height: 66px;
+    border-radius: 0 0 20px 20px;
+  }
+
+  .heroContent {
+    padding-top: 90px;
+  }
+
+  .heroCopy h1 {
+    font-size: clamp(38px, 13vw, 58px);
+  }
+
+  .beforeAfterGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .warmHero {
+    min-height: 620px;
+  }
+
+  .heroSlide {
+    object-position: 64% 18%;
+  }
+
+  .heroCopy p {
+    font-size: 16px;
+  }
+
+  .heroButtons {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .bookingStep {
+    padding: 15px 12px;
+  }
+
+  .adminToolbar {
+    border-radius: 18px;
+  }
+}
