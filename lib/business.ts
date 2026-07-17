@@ -37,7 +37,12 @@ export function defaultBusinessSettings(): BusinessSettings {
 
 export async function getBusinessSettings() {
   if (!hasPersistentStorage()) return memorySettings || defaultBusinessSettings();
-  return (await kv.get<BusinessSettings>(SETTINGS_KEY)) || defaultBusinessSettings();
+  try {
+    return (await kv.get<BusinessSettings>(SETTINGS_KEY)) || defaultBusinessSettings();
+  } catch (error) {
+    console.error("KV settings read failed", error);
+    return memorySettings || defaultBusinessSettings();
+  }
 }
 
 export async function updateBusinessSettings(input: Partial<BusinessSettings>) {
@@ -130,5 +135,12 @@ async function saveBusinessSettings(settings: BusinessSettings) {
     return;
   }
 
-  await kv.set(SETTINGS_KEY, settings);
+  try {
+    await kv.set(SETTINGS_KEY, settings);
+    memorySettings = settings;
+  } catch (error) {
+    console.error("KV settings write failed", error);
+    memorySettings = settings;
+    throw error;
+  }
 }
