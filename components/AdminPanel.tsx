@@ -102,11 +102,18 @@ export default function AdminPanel() {
   const [statusFilter, setStatusFilter] = useState<"all" | AppointmentStatus>("all");
   const [tab, setTab] = useState<"appointments" | "customers" | "business">("appointments");
   const [calendarDate, setCalendarDate] = useState(todayInTurkey());
+  const [manualCustomerId, setManualCustomerId] = useState("");
+  const [manualPetId, setManualPetId] = useState("");
+  const [manualCustomerName, setManualCustomerName] = useState("");
+  const [manualPhone, setManualPhone] = useState("");
+  const [manualPetName, setManualPetName] = useState("");
+  const [manualPetType, setManualPetType] = useState("");
 
   const isLoggedIn = Boolean(sessionPassword);
   const today = todayInTurkey();
   const weekEnd = addDays(today, 6);
   const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) || customers[0];
+  const manualCustomer = customers.find((customer) => customer.id === manualCustomerId) || null;
 
   const stats = useMemo(() => {
     const active = appointments.filter((item) => item.status !== "cancelled");
@@ -167,6 +174,10 @@ export default function AdminPanel() {
       .filter((item) => item.date === today && item.status !== "cancelled")
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }, [appointments, today]);
+
+  const manualPetOptions = useMemo(() => {
+    return manualCustomer?.pets || [];
+  }, [manualCustomer]);
 
   const calendarDayAppointments = useMemo(() => {
     return appointments
@@ -267,6 +278,12 @@ export default function AdminPanel() {
 
     setMessage("Randevu eklendi.");
     form.reset();
+    setManualCustomerId("");
+    setManualPetId("");
+    setManualCustomerName("");
+    setManualPhone("");
+    setManualPetName("");
+    setManualPetType("");
     await loadAll();
   }
 
@@ -439,6 +456,41 @@ export default function AdminPanel() {
     setQuery(customer.phone);
     setStatusFilter("all");
     setTab("appointments");
+  }
+
+  function selectManualCustomer(customerId: string) {
+    setManualCustomerId(customerId);
+    setManualPetId("");
+
+    const customer = customers.find((item) => item.id === customerId);
+    if (!customer) {
+      setManualCustomerName("");
+      setManualPhone("");
+      setManualPetName("");
+      setManualPetType("");
+      return;
+    }
+
+    setManualCustomerName(customer.name);
+    setManualPhone(customer.phone);
+
+    const firstPet = customer.pets[0];
+    setManualPetId(firstPet?.id || "");
+    setManualPetName(firstPet?.name || "");
+    setManualPetType(firstPet ? firstPet.breed || firstPet.type : "");
+  }
+
+  function selectManualPet(petId: string) {
+    setManualPetId(petId);
+    const pet = manualPetOptions.find((item) => item.id === petId);
+    if (!pet) {
+      setManualPetName("");
+      setManualPetType("");
+      return;
+    }
+
+    setManualPetName(pet.name);
+    setManualPetType(pet.breed || pet.type);
   }
 
   if (!isLoggedIn) {
@@ -644,14 +696,38 @@ export default function AdminPanel() {
                 <p>Telefon veya sosyal medyadan gelen talepler için hızlı kayıt.</p>
               </div>
             </div>
+            <div className="manualCustomerPicker">
+              <label>
+                <span>Kayıtlı müşteri</span>
+                <select value={manualCustomerId} onChange={(event) => selectManualCustomer(event.target.value)}>
+                  <option value="">Yeni müşteri / serbest giriş</option>
+                  {customers.map((customer) => (
+                    <option value={customer.id} key={customer.id}>
+                      {customer.name} · {customer.phone}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Kayıtlı pet</span>
+                <select value={manualPetId} onChange={(event) => selectManualPet(event.target.value)} disabled={!manualCustomerId || manualPetOptions.length === 0}>
+                  <option value="">{manualCustomerId ? "Pet seç veya elle yaz" : "Önce müşteri seç"}</option>
+                  {manualPetOptions.map((pet) => (
+                    <option value={pet.id} key={pet.id}>
+                      {pet.name} {pet.breed ? `· ${pet.breed}` : pet.type ? `· ${pet.type}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <div className="formGrid">
               <input name="date" type="date" required defaultValue={today} />
               <input name="startTime" type="time" required defaultValue="12:00" />
               <input name="endTime" type="time" required defaultValue="13:00" />
-              <input name="customerName" required placeholder="Müşteri adı" />
-              <input name="phone" required placeholder="Telefon" />
-              <input name="petName" required placeholder="Pet adı" />
-              <input name="petType" required placeholder="Tür / ırk" />
+              <input name="customerName" required placeholder="Müşteri adı" value={manualCustomerName} onChange={(event) => setManualCustomerName(event.target.value)} />
+              <input name="phone" required placeholder="Telefon" value={manualPhone} onChange={(event) => setManualPhone(event.target.value)} />
+              <input name="petName" required placeholder="Pet adı" value={manualPetName} onChange={(event) => setManualPetName(event.target.value)} />
+              <input name="petType" required placeholder="Tür / ırk" value={manualPetType} onChange={(event) => setManualPetType(event.target.value)} />
               <select name="service" required defaultValue="Komple bakım">
                 <option>Komple bakım</option>
                 <option>Banyo ve kurutma</option>

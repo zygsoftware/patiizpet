@@ -4664,3 +4664,31 @@ body,
   background: #f7f3ee;
   border-color: #e3d8cc;
 }
+
+.manualCustomerPicker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid rgba(189, 122, 40, 0.2);
+  border-radius: 16px;
+  background: #fff7e8;
+}
+
+.manualCustomerPicker label {
+  display: grid;
+  gap: 6px;
+}
+
+.manualCustomerPicker span {
+  color: #7a5528;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+@media (max-width: 760px) {
+  .manualCustomerPicker {
+    grid-template-columns: 1fr;
+  }
+}
