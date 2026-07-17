@@ -3947,3 +3947,133 @@ body,
     grid-column: 1 / -1;
   }
 }
+
+/* ---------- Slider framing + richer admin colors ---------- */
+.heroSlide {
+  object-position: 72% 18%;
+}
+
+@media (min-width: 1180px) {
+  .heroSlide {
+    object-position: 74% 16%;
+  }
+}
+
+.homeFloatOne {
+  right: clamp(22px, 8vw, 150px);
+  bottom: clamp(58px, 11vw, 132px);
+}
+
+.adminPageRoot {
+  background:
+    radial-gradient(circle at 10% 8%, rgba(238, 140, 127, 0.18), transparent 24vw),
+    radial-gradient(circle at 88% 12%, rgba(118, 161, 145, 0.18), transparent 28vw),
+    radial-gradient(circle at 58% 88%, rgba(180, 137, 99, 0.15), transparent 32vw),
+    linear-gradient(135deg, #fffaf5 0%, #f8efe7 45%, #f1f5ef 100%);
+}
+
+.premiumAdminHero {
+  border-color: rgba(238, 140, 127, 0.26);
+  background:
+    linear-gradient(120deg, rgba(255, 253, 249, 0.92), rgba(255, 240, 236, 0.82)),
+    radial-gradient(circle at 92% 18%, rgba(238, 140, 127, 0.22), transparent 22vw);
+}
+
+.statRow .statCard:nth-child(1) {
+  background: linear-gradient(135deg, rgba(47, 47, 43, 0.08), rgba(255, 253, 249, 0.9));
+  border-color: rgba(47, 47, 43, 0.14);
+}
+
+.statRow .statCard:nth-child(2) {
+  background: linear-gradient(135deg, rgba(238, 140, 127, 0.2), rgba(255, 250, 245, 0.9));
+  border-color: rgba(238, 140, 127, 0.34);
+}
+
+.statRow .statCard:nth-child(3) {
+  background: linear-gradient(135deg, rgba(118, 161, 145, 0.2), rgba(255, 253, 249, 0.9));
+  border-color: rgba(118, 161, 145, 0.28);
+}
+
+.statRow .statCard:nth-child(4) {
+  background: linear-gradient(135deg, rgba(180, 137, 99, 0.2), rgba(255, 253, 249, 0.9));
+  border-color: rgba(180, 137, 99, 0.28);
+}
+
+.statRow .statCard:nth-child(5) {
+  background: linear-gradient(135deg, rgba(139, 128, 184, 0.18), rgba(255, 253, 249, 0.9));
+  border-color: rgba(139, 128, 184, 0.26);
+}
+
+.statRow .statCard:nth-child(6) {
+  background: linear-gradient(135deg, rgba(229, 176, 92, 0.22), rgba(255, 253, 249, 0.9));
+  border-color: rgba(229, 176, 92, 0.28);
+}
+
+.pendingPanel {
+  background:
+    linear-gradient(135deg, rgba(255, 247, 244, 0.94), rgba(255, 232, 226, 0.72)),
+    url("/heroes/hero-1.png") right 18px bottom -20px / 135px auto no-repeat;
+  border-color: rgba(238, 140, 127, 0.28);
+}
+
+.todayPanel {
+  background:
+    linear-gradient(135deg, rgba(243, 248, 244, 0.94), rgba(226, 239, 231, 0.72)),
+    url("/heroes/hero-3.png") right -16px bottom -26px / 150px auto no-repeat;
+  border-color: rgba(118, 161, 145, 0.28);
+}
+
+.adminTabs {
+  background: rgba(255, 253, 249, 0.72);
+}
+
+.adminTab:nth-child(1).active {
+  background: #2f2f2b;
+}
+
+.adminTab:nth-child(2).active {
+  background: #b48963;
+}
+
+.adminTab:nth-child(3).active {
+  background: #76a191;
+}
+
+.businessHoursForm {
+  border-color: rgba(118, 161, 145, 0.28);
+  background: linear-gradient(135deg, rgba(248, 253, 249, 0.9), rgba(230, 241, 234, 0.68));
+}
+
+.closedBlockForm,
+.closedBlockPanel {
+  border-color: rgba(238, 140, 127, 0.28);
+  background: linear-gradient(135deg, rgba(255, 250, 245, 0.92), rgba(255, 238, 232, 0.68));
+}
+
+.hoursRow:nth-child(odd) {
+  background: rgba(255, 253, 249, 0.78);
+}
+
+.hoursRow:nth-child(even) {
+  background: rgba(244, 249, 245, 0.78);
+}
+
+.requestCard,
+.timelineItem,
+.appointmentCard,
+.customerCard,
+.closedBlockCard {
+  background: rgba(255, 253, 249, 0.88);
+}
+
+@media (max-width: 960px) {
+  .heroSlide {
+    object-position: 68% 20%;
+  }
+}
+
+@media (max-width: 620px) {
+  .heroSlide {
+    object-position: 66% 18%;
+  }
+}
