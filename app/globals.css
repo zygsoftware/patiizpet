@@ -4687,8 +4687,180 @@ body,
   font-weight: 850;
 }
 
+.photoUpload {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed rgba(189, 122, 40, 0.36);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: #7a5528;
+  background: #fff7e8;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.photoUpload input {
+  display: none;
+}
+
+.petPhotoPreview,
+.petPhoto {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f4eee7;
+}
+
+.petPhotoPreview {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 12px;
+}
+
+.petPhoto {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.petPhoto img,
+.petPhotoPreview img {
+  object-fit: cover;
+}
+
+.detailActions,
+.petDetailTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detailActions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.inlineEditForm,
+.petDetailList {
+  display: grid;
+  gap: 10px;
+}
+
+.inlineEditForm {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid rgba(52, 125, 162, 0.18);
+  border-radius: 16px;
+  padding: 12px;
+  background: #f7fcff;
+  margin: 10px 0;
+}
+
+.inlineEditForm textarea,
+.inlineEditForm button {
+  grid-column: 1 / -1;
+}
+
+.petDetailList {
+  margin: 14px 0;
+}
+
+.petDetailCard {
+  border: 1px solid rgba(111, 98, 89, 0.14);
+  border-radius: 16px;
+  padding: 12px;
+  background: #fff;
+}
+
+.petDetailTop {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto auto;
+}
+
+.petDetailTop strong,
+.petDetailTop small,
+.petNotes small {
+  display: block;
+}
+
+.petDetailTop small,
+.petNotes small {
+  color: #6d665f;
+  font-size: 12px;
+}
+
+.petNotes {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff7e8;
+}
+
+.galleryAdminGrid {
+  display: grid;
+  grid-template-columns: minmax(320px, 430px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.galleryUploadGrid,
+.galleryPreviewPair,
+.galleryCompare {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.galleryPreviewPair img,
+.galleryCompare img {
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid rgba(111, 98, 89, 0.14);
+}
+
+.galleryAdminList {
+  display: grid;
+  gap: 12px;
+}
+
+.galleryAdminCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid rgba(111, 98, 89, 0.14);
+  border-radius: 16px;
+  padding: 12px;
+  background: #fff;
+}
+
+.galleryAdminCard strong,
+.galleryAdminCard small {
+  display: block;
+}
+
+.galleryAdminCard small {
+  color: #6d665f;
+  margin-top: 3px;
+}
+
 @media (max-width: 760px) {
   .manualCustomerPicker {
+    grid-template-columns: 1fr;
+  }
+
+  .inlineEditForm,
+  .galleryAdminGrid,
+  .galleryAdminCard,
+  .petDetailTop {
     grid-template-columns: 1fr;
   }
 }

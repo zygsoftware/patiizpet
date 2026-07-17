@@ -27,6 +27,10 @@ export type PetRecord = {
   type: string;
   breed: string;
   age: string;
+  birthDate: string;
+  allergies: string;
+  characterNote: string;
+  photo: string;
   notes: string;
   createdAt: string;
 };
@@ -50,6 +54,16 @@ export type CustomerInput = {
 };
 
 export type PetInput = Omit<PetRecord, "id" | "createdAt">;
+
+export type GalleryRecord = {
+  id: string;
+  title: string;
+  petName: string;
+  beforeImage: string;
+  afterImage: string;
+  notes: string;
+  createdAt: string;
+};
 
 export type DayKey = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
 

@@ -66,6 +66,10 @@ export async function upsertCustomerFromAppointment(input: CustomerInput & { pet
       type: input.pet.type || "",
       breed: input.pet.breed || "",
       age: input.pet.age || "",
+      birthDate: input.pet.birthDate || "",
+      allergies: input.pet.allergies || "",
+      characterNote: input.pet.characterNote || "",
+      photo: input.pet.photo || "",
       notes: input.pet.notes || ""
     });
   }
@@ -89,6 +93,16 @@ export async function updateCustomer(id: string, input: Partial<CustomerInput>) 
   return next;
 }
 
+export async function deleteCustomer(id: string) {
+  if (!hasPersistentStorage()) {
+    memoryStore.delete(id);
+    return;
+  }
+
+  await kvStore.del(keyFor(id));
+  await kvStore.srem(INDEX_KEY, id);
+}
+
 export async function addPet(customerId: string, input: PetInput) {
   const customer = await getCustomer(customerId);
   if (!customer) throw new Error("Müşteri bulunamadı.");
@@ -100,6 +114,10 @@ export async function addPet(customerId: string, input: PetInput) {
     type: input.type?.trim() || "",
     breed: input.breed?.trim() || "",
     age: input.age?.trim() || "",
+    birthDate: input.birthDate?.trim() || "",
+    allergies: input.allergies?.trim() || "",
+    characterNote: input.characterNote?.trim() || "",
+    photo: input.photo?.trim() || "",
     notes: input.notes?.trim() || "",
     createdAt: new Date().toISOString()
   };
@@ -107,6 +125,53 @@ export async function addPet(customerId: string, input: PetInput) {
   const next = {
     ...customer,
     pets: [...customer.pets, pet],
+    updatedAt: new Date().toISOString()
+  };
+
+  await saveCustomer(next);
+  return next;
+}
+
+export async function updatePet(customerId: string, petId: string, input: Partial<PetInput>) {
+  const customer = await getCustomer(customerId);
+  if (!customer) throw new Error("Müşteri bulunamadı.");
+
+  const nextPets = customer.pets.map((pet) =>
+    pet.id === petId
+      ? {
+          ...pet,
+          name: input.name?.trim() || pet.name,
+          type: input.type?.trim() ?? pet.type,
+          breed: input.breed?.trim() ?? pet.breed,
+          age: input.age?.trim() ?? pet.age,
+          birthDate: input.birthDate?.trim() ?? pet.birthDate,
+          allergies: input.allergies?.trim() ?? pet.allergies,
+          characterNote: input.characterNote?.trim() ?? pet.characterNote,
+          photo: input.photo?.trim() ?? pet.photo,
+          notes: input.notes?.trim() ?? pet.notes
+        }
+      : pet
+  );
+
+  if (!nextPets.some((pet) => pet.id === petId)) throw new Error("Pet bulunamadı.");
+
+  const next = {
+    ...customer,
+    pets: nextPets,
+    updatedAt: new Date().toISOString()
+  };
+
+  await saveCustomer(next);
+  return next;
+}
+
+export async function deletePet(customerId: string, petId: string) {
+  const customer = await getCustomer(customerId);
+  if (!customer) throw new Error("Müşteri bulunamadı.");
+
+  const next = {
+    ...customer,
+    pets: customer.pets.filter((pet) => pet.id !== petId),
     updatedAt: new Date().toISOString()
   };
 
@@ -156,6 +221,10 @@ async function customersFromAppointments(existing: CustomerRecord[]) {
       type: appointment.petType,
       breed: appointment.petType,
       age: "",
+      birthDate: "",
+      allergies: "",
+      characterNote: "",
+      photo: "",
       notes: appointment.notes,
       createdAt: appointment.createdAt
     };

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import Image from "next/image";
 import {
   AlertCircle,
@@ -9,6 +9,7 @@ import {
   CalendarX2,
   CheckCircle2,
   Clock,
+  ImagePlus,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -25,7 +26,7 @@ import {
   Users
 } from "lucide-react";
 import { todayInTurkey } from "@/lib/date";
-import type { Appointment, AppointmentStatus, BusinessSettings, CustomerRecord, DayKey } from "@/lib/types";
+import type { Appointment, AppointmentStatus, BusinessSettings, CustomerRecord, DayKey, GalleryRecord } from "@/lib/types";
 
 const statusLabels: Record<AppointmentStatus, string> = {
   pending: "Bekliyor",
@@ -88,11 +89,25 @@ function whatsappAppointmentUrl(item: Appointment, mode: "confirmed" | "complete
   return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(messages[mode])}`;
 }
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    if (file.size > 750_000) {
+      reject(new Error("Fotoğraf 750 KB altında olmalı."));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Fotoğraf okunamadı."));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function AdminPanel() {
   const [password, setPassword] = useState("");
   const [sessionPassword, setSessionPassword] = useState("");
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
+  const [galleryRecords, setGalleryRecords] = useState<GalleryRecord[]>([]);
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
   const [storageMode, setStorageMode] = useState<"kv" | "memory">("memory");
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -100,7 +115,7 @@ export default function AdminPanel() {
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AppointmentStatus>("all");
-  const [tab, setTab] = useState<"appointments" | "customers" | "business">("appointments");
+  const [tab, setTab] = useState<"appointments" | "customers" | "business" | "gallery">("appointments");
   const [calendarDate, setCalendarDate] = useState(todayInTurkey());
   const [manualCustomerId, setManualCustomerId] = useState("");
   const [manualPetId, setManualPetId] = useState("");
@@ -108,6 +123,11 @@ export default function AdminPanel() {
   const [manualPhone, setManualPhone] = useState("");
   const [manualPetName, setManualPetName] = useState("");
   const [manualPetType, setManualPetType] = useState("");
+  const [editingCustomerId, setEditingCustomerId] = useState("");
+  const [editingPetId, setEditingPetId] = useState("");
+  const [petPhotoPreview, setPetPhotoPreview] = useState("");
+  const [galleryBefore, setGalleryBefore] = useState("");
+  const [galleryAfter, setGalleryAfter] = useState("");
 
   const isLoggedIn = Boolean(sessionPassword);
   const today = todayInTurkey();
@@ -213,17 +233,19 @@ export default function AdminPanel() {
   async function loadAll(activePassword = sessionPassword) {
     if (!activePassword) return false;
     setLoading(true);
-    const [appointmentResponse, customerResponse, settingsResponse] = await Promise.all([
+    const [appointmentResponse, customerResponse, settingsResponse, galleryResponse] = await Promise.all([
       fetch("/api/appointments", { cache: "no-store", headers: { "x-admin-password": activePassword } }),
       fetch("/api/customers", { cache: "no-store", headers: { "x-admin-password": activePassword } }),
-      fetch("/api/settings", { cache: "no-store", headers: { "x-admin-password": activePassword } })
+      fetch("/api/settings", { cache: "no-store", headers: { "x-admin-password": activePassword } }),
+      fetch("/api/gallery", { cache: "no-store", headers: { "x-admin-password": activePassword } })
     ]);
     const appointmentData = await appointmentResponse.json();
     const customerData = await customerResponse.json();
     const settingsData = await settingsResponse.json();
+    const galleryData = await galleryResponse.json();
     setLoading(false);
 
-    if (!appointmentResponse.ok || !customerResponse.ok || !settingsResponse.ok) {
+    if (!appointmentResponse.ok || !customerResponse.ok || !settingsResponse.ok || !galleryResponse.ok) {
       setMessage(appointmentData.message || customerData.message || settingsData.message || "Admin girişi başarısız.");
       return false;
     }
@@ -231,6 +253,7 @@ export default function AdminPanel() {
     setAppointments(appointmentData.appointments || []);
     const loadedCustomers = customerData.customers || [];
     setCustomers(loadedCustomers);
+    setGalleryRecords(galleryData.gallery || []);
     setSettings(settingsData.settings || null);
     setStorageMode(settingsData.storage?.mode || "memory");
     if (!selectedCustomerId && loadedCustomers[0]) setSelectedCustomerId(loadedCustomers[0].id);
@@ -252,6 +275,7 @@ export default function AdminPanel() {
     setSessionPassword("");
     setAppointments([]);
     setCustomers([]);
+    setGalleryRecords([]);
     setSelectedCustomerId("");
     setMessage("");
   }
@@ -336,6 +360,161 @@ export default function AdminPanel() {
 
     setMessage("Evcil hayvan kaydedildi.");
     form.reset();
+    setPetPhotoPreview("");
+    await loadAll();
+  }
+
+  async function updateCustomerRecord(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedCustomer) return;
+    setMessage("");
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch(`/api/customers/${selectedCustomer.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-password": sessionPassword
+      },
+      body: JSON.stringify(Object.fromEntries(formData))
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setMessage(result.message || "Müşteri güncellenemedi.");
+      return;
+    }
+
+    setMessage("Müşteri güncellendi.");
+    setEditingCustomerId("");
+    await loadAll();
+  }
+
+  async function removeCustomerRecord(id: string) {
+    const response = await fetch(`/api/customers/${id}`, {
+      method: "DELETE",
+      headers: { "x-admin-password": sessionPassword }
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      setMessage(result.message || "Müşteri silinemedi.");
+      return;
+    }
+
+    setMessage("Müşteri silindi.");
+    setSelectedCustomerId("");
+    await loadAll();
+  }
+
+  async function updatePetRecord(event: FormEvent<HTMLFormElement>, petId: string) {
+    event.preventDefault();
+    if (!selectedCustomer) return;
+    setMessage("");
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch(`/api/customers/${selectedCustomer.id}/pets/${petId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-password": sessionPassword
+      },
+      body: JSON.stringify(Object.fromEntries(formData))
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setMessage(result.message || "Pet güncellenemedi.");
+      return;
+    }
+
+    setMessage("Pet güncellendi.");
+    setEditingPetId("");
+    await loadAll();
+  }
+
+  async function removePetRecord(petId: string) {
+    if (!selectedCustomer) return;
+    const response = await fetch(`/api/customers/${selectedCustomer.id}/pets/${petId}`, {
+      method: "DELETE",
+      headers: { "x-admin-password": sessionPassword }
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setMessage(result.message || "Pet silinemedi.");
+      return;
+    }
+
+    setMessage("Pet silindi.");
+    setEditingPetId("");
+    await loadAll();
+  }
+
+  async function handlePetPhoto(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      setPetPhotoPreview(await fileToDataUrl(file));
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Fotoğraf okunamadı.");
+    }
+  }
+
+  async function handleGalleryImage(event: ChangeEvent<HTMLInputElement>, target: "before" | "after") {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const value = await fileToDataUrl(file);
+      if (target === "before") setGalleryBefore(value);
+      else setGalleryAfter(value);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Fotoğraf okunamadı.");
+    }
+  }
+
+  async function createGalleryItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const response = await fetch("/api/gallery", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-password": sessionPassword
+      },
+      body: JSON.stringify({
+        ...Object.fromEntries(formData),
+        beforeImage: galleryBefore,
+        afterImage: galleryAfter
+      })
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      setMessage(result.message || "Galeri kaydı eklenemedi.");
+      return;
+    }
+
+    setMessage("Galeri kaydı eklendi.");
+    setGalleryBefore("");
+    setGalleryAfter("");
+    form.reset();
+    await loadAll();
+  }
+
+  async function removeGalleryItem(id: string) {
+    const response = await fetch(`/api/gallery?id=${id}`, {
+      method: "DELETE",
+      headers: { "x-admin-password": sessionPassword }
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      setMessage(result.message || "Galeri kaydı silinemedi.");
+      return;
+    }
+
+    setMessage("Galeri kaydı silindi.");
     await loadAll();
   }
 
@@ -660,8 +839,11 @@ export default function AdminPanel() {
           <button className={tab === "business" ? "adminTab active" : "adminTab"} onClick={() => setTab("business")}>
             <Settings size={17} /> İşletme
           </button>
+          <button className={tab === "gallery" ? "adminTab active" : "adminTab"} onClick={() => setTab("gallery")}>
+            <ImagePlus size={17} /> Galeri
+          </button>
         </div>
-        {tab !== "business" && (
+        {tab !== "business" && tab !== "gallery" && (
           <div className="adminFilters">
             <label className="searchBox">
               <Search size={17} />
@@ -929,7 +1111,21 @@ export default function AdminPanel() {
                 <input name="type" placeholder="Tür: Köpek, kedi..." />
                 <input name="breed" placeholder="Irk" />
                 <input name="age" placeholder="Yaş" />
+                <input name="birthDate" type="date" title="Doğum tarihi" />
+                <input name="allergies" placeholder="Alerji bilgisi" />
               </div>
+              <label className="photoUpload">
+                <ImagePlus size={18} />
+                <span>Pet fotoğrafı</span>
+                <input type="file" accept="image/*" onChange={handlePetPhoto} />
+              </label>
+              {petPhotoPreview && (
+                <div className="petPhotoPreview">
+                  <Image src={petPhotoPreview} alt="Pet fotoğraf önizleme" fill sizes="120px" />
+                </div>
+              )}
+              <input name="photo" type="hidden" value={petPhotoPreview} />
+              <textarea name="characterNote" rows={2} placeholder="Karakter notu: sakin, çekingen, hareketli..." />
               <textarea name="notes" rows={3} placeholder="Hassasiyet, tüy durumu, davranış notu" />
               <button className="submitButton" disabled={!selectedCustomer}>
                 <PawPrint size={18} /> Pet Kaydet
@@ -985,11 +1181,70 @@ export default function AdminPanel() {
               <div className="customerDetail">
                 <h3>{selectedCustomer.name}</h3>
                 <p>{selectedCustomer.notes || "Müşteri notu eklenmemiş."}</p>
+                <div className="detailActions">
+                  <button className="ghostButton smallButton" type="button" onClick={() => setEditingCustomerId(editingCustomerId === selectedCustomer.id ? "" : selectedCustomer.id)}>
+                    Müşteriyi Düzenle
+                  </button>
+                  <button className="iconButton danger" type="button" title="Müşteriyi sil" onClick={() => removeCustomerRecord(selectedCustomer.id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                {editingCustomerId === selectedCustomer.id && (
+                  <form className="inlineEditForm" onSubmit={updateCustomerRecord}>
+                    <input name="name" defaultValue={selectedCustomer.name} required placeholder="Müşteri adı" />
+                    <input name="phone" defaultValue={selectedCustomer.phone} required placeholder="Telefon" />
+                    <input name="email" type="email" defaultValue={selectedCustomer.email} placeholder="E-posta" />
+                    <input name="notes" defaultValue={selectedCustomer.notes} placeholder="Müşteri notu" />
+                    <button className="submitButton smallButton">Müşteriyi Güncelle</button>
+                  </form>
+                )}
                 <div className="petChips">
                   {selectedCustomer.pets.map((pet) => (
                     <span key={pet.id}>
                       <PawPrint size={14} /> {pet.name} {pet.breed && `· ${pet.breed}`}
                     </span>
+                  ))}
+                </div>
+                <div className="petDetailList">
+                  {selectedCustomer.pets.map((pet) => (
+                    <article className="petDetailCard" key={pet.id}>
+                      <div className="petDetailTop">
+                        <span className="petPhoto">
+                          {pet.photo ? <Image src={pet.photo} alt={pet.name} fill sizes="56px" /> : <PawPrint size={18} />}
+                        </span>
+                        <span>
+                          <strong>{pet.name}</strong>
+                          <small>{[pet.breed || pet.type, pet.birthDate, pet.age && `${pet.age} yaş`].filter(Boolean).join(" · ") || "Detay eklenmemiş"}</small>
+                        </span>
+                        <button className="ghostButton smallButton" type="button" onClick={() => setEditingPetId(editingPetId === pet.id ? "" : pet.id)}>
+                          Düzenle
+                        </button>
+                        <button className="iconButton danger" type="button" title="Peti sil" onClick={() => removePetRecord(pet.id)}>
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                      {(pet.allergies || pet.characterNote || pet.notes) && (
+                        <div className="petNotes">
+                          {pet.allergies && <small>Alerji: {pet.allergies}</small>}
+                          {pet.characterNote && <small>Karakter: {pet.characterNote}</small>}
+                          {pet.notes && <small>Not: {pet.notes}</small>}
+                        </div>
+                      )}
+                      {editingPetId === pet.id && (
+                        <form className="inlineEditForm" onSubmit={(event) => updatePetRecord(event, pet.id)}>
+                          <input name="name" defaultValue={pet.name} required placeholder="Pet adı" />
+                          <input name="type" defaultValue={pet.type} placeholder="Tür" />
+                          <input name="breed" defaultValue={pet.breed} placeholder="Irk" />
+                          <input name="age" defaultValue={pet.age} placeholder="Yaş" />
+                          <input name="birthDate" type="date" defaultValue={pet.birthDate} />
+                          <input name="allergies" defaultValue={pet.allergies} placeholder="Alerji" />
+                          <input name="characterNote" defaultValue={pet.characterNote} placeholder="Karakter notu" />
+                          <input name="photo" defaultValue={pet.photo} placeholder="Fotoğraf data URL" />
+                          <textarea name="notes" defaultValue={pet.notes} rows={2} placeholder="Bakım notu" />
+                          <button className="submitButton smallButton">Peti Güncelle</button>
+                        </form>
+                      )}
+                    </article>
                   ))}
                 </div>
                 <div className="miniHistory">
@@ -1004,6 +1259,75 @@ export default function AdminPanel() {
                     ))
                   )}
                 </div>
+              </div>
+            )}
+          </div>
+        </section>
+      ) : tab === "gallery" ? (
+        <section className="galleryAdminGrid">
+          <form className="adminForm" onSubmit={createGalleryItem}>
+            <div className="formHeader">
+              <ImagePlus size={22} />
+              <div>
+                <h2>Önce / sonra ekle</h2>
+                <p>Bakım dönüşümlerini admin panelden galeri olarak kaydedin.</p>
+              </div>
+            </div>
+            <div className="formGrid">
+              <input name="title" required placeholder="Başlık" />
+              <input name="petName" placeholder="Pet adı" />
+            </div>
+            <div className="galleryUploadGrid">
+              <label className="photoUpload">
+                <ImagePlus size={18} />
+                <span>Önce fotoğrafı</span>
+                <input type="file" accept="image/*" onChange={(event) => handleGalleryImage(event, "before")} />
+              </label>
+              <label className="photoUpload">
+                <ImagePlus size={18} />
+                <span>Sonra fotoğrafı</span>
+                <input type="file" accept="image/*" onChange={(event) => handleGalleryImage(event, "after")} />
+              </label>
+            </div>
+            {(galleryBefore || galleryAfter) && (
+              <div className="galleryPreviewPair">
+                {galleryBefore && <Image src={galleryBefore} alt="Önce fotoğraf önizleme" width={150} height={110} />}
+                {galleryAfter && <Image src={galleryAfter} alt="Sonra fotoğraf önizleme" width={150} height={110} />}
+              </div>
+            )}
+            <textarea name="notes" rows={3} placeholder="Bakım notu veya açıklama" />
+            <button className="submitButton" disabled={!galleryBefore || !galleryAfter}>
+              <ImagePlus size={18} /> Galeriye Ekle
+            </button>
+          </form>
+
+          <div className="calendarPanel">
+            <div className="panelHeader">
+              <div>
+                <h2>Galeri kayıtları</h2>
+                <p>{galleryRecords.length} önce/sonra kaydı</p>
+              </div>
+            </div>
+            {galleryRecords.length === 0 ? (
+              <p className="emptyState">Henüz galeri kaydı yok.</p>
+            ) : (
+              <div className="galleryAdminList">
+                {galleryRecords.map((record) => (
+                  <article className="galleryAdminCard" key={record.id}>
+                    <div className="galleryCompare">
+                      <Image src={record.beforeImage} alt={`${record.title} önce`} width={130} height={100} />
+                      <Image src={record.afterImage} alt={`${record.title} sonra`} width={130} height={100} />
+                    </div>
+                    <div>
+                      <strong>{record.title}</strong>
+                      <small>{record.petName || "Pet adı yok"} · {new Date(record.createdAt).toLocaleDateString("tr-TR")}</small>
+                      {record.notes && <p>{record.notes}</p>}
+                    </div>
+                    <button className="iconButton danger" type="button" title="Galeri kaydını sil" onClick={() => removeGalleryItem(record.id)}>
+                      <Trash2 size={16} />
+                    </button>
+                  </article>
+                ))}
               </div>
             )}
           </div>
