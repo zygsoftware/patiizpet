@@ -5282,3 +5282,122 @@ body {
 .footerBottom a:hover {
   color: var(--patiiz-rose);
 }
+
+/* ---------- Screenshot QA layout fixes ---------- */
+.secondaryButton,
+.primaryButton,
+.submitButton,
+.iconTextButton,
+.smallButton {
+  white-space: nowrap;
+}
+
+.sectionHead .secondaryButton {
+  min-width: max-content;
+  padding-inline: 22px;
+}
+
+.salonFeature {
+  overflow: visible;
+  padding-top: clamp(72px, 8vw, 118px);
+}
+
+.salonFeature .storyPanel {
+  overflow: visible;
+}
+
+.salonFeature h2 {
+  max-width: 11ch;
+  line-height: 1.03;
+  padding-top: 0.08em;
+}
+
+.featureList div {
+  min-height: 72px;
+  align-items: center;
+}
+
+.contactCard .primaryButton {
+  color: #fffaf4;
+  background: linear-gradient(135deg, var(--patiiz-coffee), var(--patiiz-espresso));
+}
+
+.contactCard .primaryButton:hover {
+  color: #fffaf4;
+}
+
+.contactCard a,
+.contactCard span {
+  min-width: 0;
+}
+
+.contactCard .primaryButton {
+  width: 100%;
+  justify-content: center;
+}
+
+.manualCustomerPicker {
+  grid-template-columns: 1fr;
+}
+
+.manualCustomerPicker select,
+.adminForm select,
+.adminForm input,
+.adminForm textarea {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 1120px) {
+  .adminShell {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+
+  .adminGrid {
+    grid-template-columns: minmax(420px, 520px) minmax(0, 1fr);
+  }
+
+  .adminToolbar .searchBox input::placeholder {
+    font-size: 0;
+  }
+
+  .adminToolbar .searchBox input {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 900px) {
+  .sectionHead {
+    align-items: flex-start;
+  }
+
+  .sectionHead .secondaryButton {
+    width: fit-content;
+  }
+
+  .salonFeature {
+    padding-top: 64px;
+  }
+
+  .salonFeature h2 {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .secondaryButton,
+  .primaryButton,
+  .submitButton {
+    min-height: 48px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .sectionHead .secondaryButton {
+    width: auto;
+  }
+
+  .contactCard .primaryButton {
+    width: 100%;
+  }
+}
