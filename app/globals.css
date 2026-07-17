@@ -3633,6 +3633,21 @@ body,
   transform: scale(1);
 }
 
+/* ---------- Logo sizing polish ---------- */
+.brandLogo {
+  height: clamp(28px, 3vw, 36px);
+}
+
+.footerBrand {
+  padding: 10px 12px;
+  border-radius: 18px;
+}
+
+.footerLogo {
+  width: clamp(138px, 15vw, 184px);
+  height: auto;
+}
+
 /* ---------- Admin simplification + operations management ---------- */
 .adminPageRoot {
   background:

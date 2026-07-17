@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="footerInner">
         <div>
           <Link className="footerBrand" href="/" aria-label="Patiizpet ana sayfa">
-            <Image src="/logo-emblem.png" alt="Patiizpet Pet Kuaförü" width={520} height={520} className="footerLogo" />
+            <Image src="/logo-mark.png" alt="Patiizpet Pet Kuaförü" width={720} height={158} className="footerLogo" />
           </Link>
           <p>{site.description}</p>
         </div>
