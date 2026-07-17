@@ -1,5 +1,5 @@
-import { kv } from "@vercel/kv";
 import { findClosedBlockConflict, getBusinessSettings, isWithinWorkingHours, normalizeTime, overlaps, toMinutes } from "./business";
+import { kvStore } from "./kv";
 import { hasPersistentStorage } from "./storage";
 import { Appointment, AppointmentInput, AppointmentStatus } from "./types";
 
@@ -34,11 +34,11 @@ export async function listAppointments() {
     return Array.from(memoryStore.values()).sort(sortAppointments);
   }
 
-  const ids = await kv.smembers<string[]>(INDEX_KEY);
+  const ids = await kvStore.smembers(INDEX_KEY);
   if (!ids.length) return [];
 
-  const items = await kv.mget<Appointment[]>(...ids.map((id) => `appointments:${id}`));
-  return items.filter(Boolean).sort(sortAppointments);
+  const items = await kvStore.mget<Appointment>(ids.map((id) => `appointments:${id}`));
+  return items.filter((item): item is Appointment => Boolean(item)).sort(sortAppointments);
 }
 
 export async function listPublicAppointments(date?: string) {
@@ -115,8 +115,8 @@ export async function createAppointment(input: AppointmentInput) {
     return appointment;
   }
 
-  await kv.set(`appointments:${appointment.id}`, appointment);
-  await kv.sadd(INDEX_KEY, appointment.id);
+  await kvStore.set(`appointments:${appointment.id}`, appointment);
+  await kvStore.sadd(INDEX_KEY, appointment.id);
   return appointment;
 }
 
@@ -148,7 +148,7 @@ export async function updateAppointment(id: string, patch: Partial<Appointment>)
     return next;
   }
 
-  await kv.set(`appointments:${id}`, next);
+  await kvStore.set(`appointments:${id}`, next);
   return next;
 }
 
@@ -158,13 +158,13 @@ export async function deleteAppointment(id: string) {
     return;
   }
 
-  await kv.del(`appointments:${id}`);
-  await kv.srem(INDEX_KEY, id);
+  await kvStore.del(`appointments:${id}`);
+  await kvStore.srem(INDEX_KEY, id);
 }
 
 async function getAppointment(id: string) {
   if (!hasPersistentStorage()) return memoryStore.get(id) || null;
-  return kv.get<Appointment>(`appointments:${id}`);
+  return kvStore.get<Appointment>(`appointments:${id}`);
 }
 
 function sortAppointments(a: Appointment, b: Appointment) {

@@ -1,5 +1,5 @@
-import { kv } from "@vercel/kv";
 import { listAppointments } from "./appointments";
+import { kvStore } from "./kv";
 import { hasPersistentStorage } from "./storage";
 import { CustomerInput, CustomerRecord, PetInput, PetRecord } from "./types";
 
@@ -25,11 +25,11 @@ async function listStoredCustomers() {
     return Array.from(memoryStore.values()).sort(sortCustomers);
   }
 
-  const ids = await kv.smembers<string[]>(INDEX_KEY);
+  const ids = await kvStore.smembers(INDEX_KEY);
   if (!ids.length) return [];
 
-  const items = await kv.mget<CustomerRecord[]>(...ids.map(keyFor));
-  return items.filter(Boolean).sort(sortCustomers);
+  const items = await kvStore.mget<CustomerRecord>(ids.map(keyFor));
+  return items.filter((item): item is CustomerRecord => Boolean(item)).sort(sortCustomers);
 }
 
 export async function createCustomer(input: CustomerInput) {
@@ -116,7 +116,7 @@ export async function addPet(customerId: string, input: PetInput) {
 
 async function getCustomer(id: string) {
   if (!hasPersistentStorage()) return memoryStore.get(id) || null;
-  return kv.get<CustomerRecord>(keyFor(id));
+  return kvStore.get<CustomerRecord>(keyFor(id));
 }
 
 async function findCustomerByPhone(phone: string) {
@@ -131,8 +131,8 @@ async function saveCustomer(customer: CustomerRecord) {
     return;
   }
 
-  await kv.set(keyFor(customer.id), customer);
-  await kv.sadd(INDEX_KEY, customer.id);
+  await kvStore.set(keyFor(customer.id), customer);
+  await kvStore.sadd(INDEX_KEY, customer.id);
 }
 
 function sortCustomers(a: CustomerRecord, b: CustomerRecord) {

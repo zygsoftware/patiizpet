@@ -1,4 +1,4 @@
-import { kv } from "@vercel/kv";
+import { kvStore } from "./kv";
 import { hasPersistentStorage } from "./storage";
 import { BusinessSettings, ClosedBlock, DayKey } from "./types";
 
@@ -38,7 +38,7 @@ export function defaultBusinessSettings(): BusinessSettings {
 export async function getBusinessSettings() {
   if (!hasPersistentStorage()) return memorySettings || defaultBusinessSettings();
   try {
-    return (await kv.get<BusinessSettings>(SETTINGS_KEY)) || defaultBusinessSettings();
+    return (await kvStore.get<BusinessSettings>(SETTINGS_KEY)) || defaultBusinessSettings();
   } catch (error) {
     console.error("KV settings read failed", error);
     return memorySettings || defaultBusinessSettings();
@@ -136,7 +136,7 @@ async function saveBusinessSettings(settings: BusinessSettings) {
   }
 
   try {
-    await kv.set(SETTINGS_KEY, settings);
+    await kvStore.set(SETTINGS_KEY, settings);
     memorySettings = settings;
   } catch (error) {
     console.error("KV settings write failed", error);
