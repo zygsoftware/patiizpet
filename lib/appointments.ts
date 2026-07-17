@@ -1,13 +1,10 @@
 import { kv } from "@vercel/kv";
 import { findClosedBlockConflict, getBusinessSettings, isWithinWorkingHours, normalizeTime, overlaps, toMinutes } from "./business";
+import { hasPersistentStorage } from "./storage";
 import { Appointment, AppointmentInput, AppointmentStatus } from "./types";
 
 const INDEX_KEY = "appointments:index";
 const memoryStore = new Map<string, Appointment>();
-
-function hasKv() {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
-}
 
 export function validateAppointment(input: AppointmentInput) {
   const required = [
@@ -33,7 +30,7 @@ export function validateAppointment(input: AppointmentInput) {
 }
 
 export async function listAppointments() {
-  if (!hasKv()) {
+  if (!hasPersistentStorage()) {
     return Array.from(memoryStore.values()).sort(sortAppointments);
   }
 
@@ -113,7 +110,7 @@ export async function createAppointment(input: AppointmentInput) {
     createdAt: new Date().toISOString()
   };
 
-  if (!hasKv()) {
+  if (!hasPersistentStorage()) {
     memoryStore.set(appointment.id, appointment);
     return appointment;
   }
@@ -146,7 +143,7 @@ export async function updateAppointment(id: string, patch: Partial<Appointment>)
 
   if (hasConflict) throw new Error("Bu saat aralığı başka bir randevu ile çakışıyor.");
 
-  if (!hasKv()) {
+  if (!hasPersistentStorage()) {
     memoryStore.set(id, next);
     return next;
   }
@@ -156,7 +153,7 @@ export async function updateAppointment(id: string, patch: Partial<Appointment>)
 }
 
 export async function deleteAppointment(id: string) {
-  if (!hasKv()) {
+  if (!hasPersistentStorage()) {
     memoryStore.delete(id);
     return;
   }
@@ -166,7 +163,7 @@ export async function deleteAppointment(id: string) {
 }
 
 async function getAppointment(id: string) {
-  if (!hasKv()) return memoryStore.get(id) || null;
+  if (!hasPersistentStorage()) return memoryStore.get(id) || null;
   return kv.get<Appointment>(`appointments:${id}`);
 }
 

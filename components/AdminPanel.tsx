@@ -12,6 +12,7 @@ import {
   Loader2,
   LockKeyhole,
   LogOut,
+  MessageCircle,
   PawPrint,
   Phone,
   Plus,
@@ -56,18 +57,51 @@ function addDays(dateStr: string, days: number) {
   return d.toISOString().slice(0, 10);
 }
 
+function toCalendarMinutes(value: string) {
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function minutesToCalendarTime(value: number) {
+  const hours = Math.floor(value / 60).toString().padStart(2, "0");
+  const minutes = (value % 60).toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+function overlapsCalendar(aStart: string, aEnd: string, bStart: string, bEnd: string) {
+  return toCalendarMinutes(aStart) < toCalendarMinutes(bEnd) && toCalendarMinutes(bStart) < toCalendarMinutes(aEnd);
+}
+
+function dayKeyForCalendar(date: string): DayKey {
+  const index = new Date(`${date}T12:00:00`).getDay();
+  return dayOrder[(index + 6) % 7];
+}
+
+function whatsappAppointmentUrl(item: Appointment, mode: "confirmed" | "completed" | "reminder" = "confirmed") {
+  const phone = item.phone.replace(/\D/g, "");
+  const normalizedPhone = phone.startsWith("90") ? phone : phone.startsWith("0") ? `9${phone}` : `90${phone}`;
+  const messages = {
+    confirmed: `Merhaba ${item.customerName}, Patiizpet randevunuz onaylandı. ${item.date} tarihinde ${item.startTime}-${item.endTime} arası ${item.petName} için sizi bekliyoruz. Görüşmek üzere.`,
+    completed: `Merhaba ${item.customerName}, bugün ${item.petName} için bakım randevunuzu tamamladık. Patiizpet'i tercih ettiğiniz için teşekkür ederiz.`,
+    reminder: `Merhaba ${item.customerName}, Patiizpet randevunuzu hatırlatmak isteriz: ${item.date} ${item.startTime}-${item.endTime}. Uygun değilseniz bize WhatsApp'tan yazabilirsiniz.`
+  };
+  return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(messages[mode])}`;
+}
+
 export default function AdminPanel() {
   const [password, setPassword] = useState("");
   const [sessionPassword, setSessionPassword] = useState("");
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
+  const [storageMode, setStorageMode] = useState<"kv" | "memory">("memory");
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AppointmentStatus>("all");
   const [tab, setTab] = useState<"appointments" | "customers" | "business">("appointments");
+  const [calendarDate, setCalendarDate] = useState(todayInTurkey());
 
   const isLoggedIn = Boolean(sessionPassword);
   const today = todayInTurkey();
@@ -134,6 +168,37 @@ export default function AdminPanel() {
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }, [appointments, today]);
 
+  const calendarDayAppointments = useMemo(() => {
+    return appointments
+      .filter((item) => item.date === calendarDate && item.status !== "cancelled")
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [appointments, calendarDate]);
+
+  const calendarSlots = useMemo(() => {
+    if (!settings) return [];
+    const dayKey = dayKeyForCalendar(calendarDate);
+    const hours = settings.workingHours[dayKey];
+    if (!hours || hours.closed) return [];
+
+    const slots: { time: string; state: "available" | "busy" | "closed"; label: string; appointment?: Appointment }[] = [];
+    const step = settings.slotMinutes || 60;
+    for (let cursor = toCalendarMinutes(hours.open); cursor < toCalendarMinutes(hours.close); cursor += step) {
+      const start = minutesToCalendarTime(cursor);
+      const end = minutesToCalendarTime(Math.min(cursor + step, toCalendarMinutes(hours.close)));
+      const appointment = calendarDayAppointments.find((item) => overlapsCalendar(start, end, item.startTime, item.endTime));
+      const closedBlock = settings.closedBlocks.find(
+        (block) => block.date === calendarDate && overlapsCalendar(start, end, block.startTime, block.endTime)
+      );
+      slots.push({
+        time: `${start} - ${end}`,
+        state: appointment ? "busy" : closedBlock ? "closed" : "available",
+        label: appointment ? `${appointment.petName} / ${appointment.customerName}` : closedBlock ? closedBlock.reason : "Müsait",
+        appointment
+      });
+    }
+    return slots;
+  }, [settings, calendarDate, calendarDayAppointments]);
+
   async function loadAll(activePassword = sessionPassword) {
     if (!activePassword) return false;
     setLoading(true);
@@ -156,6 +221,7 @@ export default function AdminPanel() {
     const loadedCustomers = customerData.customers || [];
     setCustomers(loadedCustomers);
     setSettings(settingsData.settings || null);
+    setStorageMode(settingsData.storage?.mode || "memory");
     if (!selectedCustomerId && loadedCustomers[0]) setSelectedCustomerId(loadedCustomers[0].id);
     return true;
   }
@@ -291,6 +357,7 @@ export default function AdminPanel() {
 
     setMessage("İşletme ayarları güncellendi.");
     setSettings(result.settings);
+    setStorageMode(result.storage?.mode || storageMode);
   }
 
   async function addClosedBlock(event: FormEvent<HTMLFormElement>) {
@@ -315,6 +382,7 @@ export default function AdminPanel() {
 
     setMessage("Saat aralığı randevuya kapatıldı.");
     setSettings(result.settings);
+    setStorageMode(result.storage?.mode || storageMode);
     form.reset();
   }
 
@@ -332,6 +400,7 @@ export default function AdminPanel() {
 
     setMessage("Kapalı saat kaldırıldı.");
     setSettings(result.settings);
+    setStorageMode(result.storage?.mode || storageMode);
   }
 
   async function updateStatus(id: string, status: AppointmentStatus) {
@@ -425,6 +494,15 @@ export default function AdminPanel() {
           </button>
         </div>
       </section>
+
+      <div className={`storageNotice ${storageMode === "kv" ? "isPersistent" : "isTemporary"}`}>
+        <ShieldCheck size={18} />
+        <span>
+          {storageMode === "kv"
+            ? "Kalıcı kayıt aktif: randevu, müşteri ve işletme ayarları KV veritabanında saklanıyor."
+            : "Geçici kayıt modu: KV bağlantısı yoksa Vercel yeniden başlatmalarında randevu ve ayarlar kaybolabilir."}
+        </span>
+      </div>
 
       <div className="statRow">
         <div className="statCard">
@@ -596,6 +674,51 @@ export default function AdminPanel() {
               </div>
             </div>
 
+            <div className="dailyPlanner">
+              <div className="dailyPlannerHead">
+                <div>
+                  <span className="sectionLabel">Günlük takvim</span>
+                  <h3>{calendarDate === today ? "Bugünün akışı" : "Seçili gün akışı"}</h3>
+                </div>
+                <div className="calendarDateControls">
+                  <button type="button" className="ghostButton smallButton" onClick={() => setCalendarDate(addDays(calendarDate, -1))}>
+                    Önceki
+                  </button>
+                  <input type="date" value={calendarDate} onChange={(event) => setCalendarDate(event.target.value)} />
+                  <button type="button" className="ghostButton smallButton" onClick={() => setCalendarDate(addDays(calendarDate, 1))}>
+                    Sonraki
+                  </button>
+                </div>
+              </div>
+              <div className="slotLegend">
+                <span><i className="available" /> Müsait</span>
+                <span><i className="busy" /> Randevu</span>
+                <span><i className="closed" /> Kapalı</span>
+              </div>
+              {calendarSlots.length === 0 ? (
+                <p className="emptyState">Bu gün çalışma planında kapalı görünüyor.</p>
+              ) : (
+                <div className="dailySlotGrid">
+                  {calendarSlots.map((slot) => (
+                    <article className={`dailySlot ${slot.state}`} key={slot.time}>
+                      <strong>{slot.time}</strong>
+                      <span>{slot.label}</span>
+                      {slot.appointment && (
+                        <a
+                          className="whatsappMini"
+                          href={whatsappAppointmentUrl(slot.appointment, "reminder")}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <MessageCircle size={14} /> Hatırlat
+                        </a>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {visibleAppointments.length === 0 ? (
               <p className="emptyState">Bu filtrelerle görüntülenecek randevu yok.</p>
             ) : (
@@ -635,6 +758,26 @@ export default function AdminPanel() {
                             <button className="quickDone" type="button" onClick={() => updateStatus(item.id, "completed")}>
                               Tamamlandı
                             </button>
+                          )}
+                          {(item.status === "confirmed" || item.status === "pending") && (
+                            <a
+                              className="whatsappAction"
+                              href={whatsappAppointmentUrl(item, "confirmed")}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <MessageCircle size={16} /> WhatsApp
+                            </a>
+                          )}
+                          {item.status === "completed" && (
+                            <a
+                              className="whatsappAction"
+                              href={whatsappAppointmentUrl(item, "completed")}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <MessageCircle size={16} /> Teşekkür
+                            </a>
                           )}
                           {item.status !== "cancelled" && item.status !== "completed" && (
                             <button className="quickCancel" type="button" onClick={() => updateStatus(item.id, "cancelled")}>

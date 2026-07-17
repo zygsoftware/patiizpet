@@ -4232,3 +4232,190 @@ body,
     justify-content: flex-start;
   }
 }
+
+/* ---------- Persistent storage, daily calendar and WhatsApp actions ---------- */
+.storageNotice {
+  width: min(1550px, calc(100% - 48px));
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(234, 222, 212, 0.9);
+  border-radius: 18px;
+  padding: 12px 16px;
+  color: #4f4942;
+  font-size: 14px;
+  font-weight: 750;
+  background: rgba(255, 253, 249, 0.82);
+}
+
+.storageNotice.isPersistent {
+  border-color: rgba(118, 161, 145, 0.34);
+  background: rgba(239, 249, 243, 0.88);
+  color: #426e5d;
+}
+
+.storageNotice.isTemporary {
+  border-color: rgba(229, 176, 92, 0.36);
+  background: rgba(255, 248, 232, 0.9);
+  color: #805815;
+}
+
+.dailyPlanner {
+  margin: 16px 0 20px;
+  border: 1px solid rgba(234, 222, 212, 0.88);
+  border-radius: 22px;
+  padding: 16px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 249, 0.94), rgba(248, 241, 234, 0.74)),
+    radial-gradient(circle at 100% 0%, rgba(238, 140, 127, 0.12), transparent 220px);
+}
+
+.dailyPlannerHead,
+.calendarDateControls,
+.slotLegend,
+.whatsappMini,
+.whatsappAction {
+  display: flex;
+  align-items: center;
+}
+
+.dailyPlannerHead {
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.dailyPlanner h3 {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+.calendarDateControls {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.calendarDateControls input {
+  min-height: 38px;
+  border-radius: 999px;
+  padding: 0 12px;
+  font-weight: 750;
+}
+
+.slotLegend {
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #6d665f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.slotLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slotLegend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.slotLegend .available {
+  background: #76a191;
+}
+
+.slotLegend .busy {
+  background: #ee8c7f;
+}
+
+.slotLegend .closed {
+  background: #8b80b8;
+}
+
+.dailySlotGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 10px;
+}
+
+.dailySlot {
+  min-height: 104px;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  border: 1px solid rgba(234, 222, 212, 0.88);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 253, 249, 0.92);
+}
+
+.dailySlot strong {
+  font-size: 14px;
+}
+
+.dailySlot span {
+  color: #5f5a53;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.dailySlot.available {
+  border-color: rgba(118, 161, 145, 0.32);
+  background: rgba(241, 249, 244, 0.92);
+}
+
+.dailySlot.busy {
+  border-color: rgba(238, 140, 127, 0.34);
+  background: rgba(255, 242, 238, 0.92);
+}
+
+.dailySlot.closed {
+  border-color: rgba(139, 128, 184, 0.3);
+  background: rgba(245, 243, 252, 0.92);
+}
+
+.whatsappMini,
+.whatsappAction {
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(37, 211, 102, 0.24);
+  border-radius: 999px;
+  color: #146c38;
+  background: rgba(37, 211, 102, 0.1);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.whatsappMini {
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.whatsappAction {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.whatsappMini:hover,
+.whatsappAction:hover {
+  transform: translateY(-1px);
+  background: rgba(37, 211, 102, 0.16);
+}
+
+@media (max-width: 760px) {
+  .storageNotice {
+    width: min(100% - 28px, 1550px);
+  }
+
+  .dailyPlannerHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,13 +1,10 @@
 import { kv } from "@vercel/kv";
 import { listAppointments } from "./appointments";
+import { hasPersistentStorage } from "./storage";
 import { CustomerInput, CustomerRecord, PetInput, PetRecord } from "./types";
 
 const INDEX_KEY = "customers:index";
 const memoryStore = new Map<string, CustomerRecord>();
-
-function hasKv() {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
-}
 
 function normalizePhone(value: string) {
   return (value || "").replace(/\D/g, "") || value.trim().toLowerCase();
@@ -24,7 +21,7 @@ export async function listCustomers() {
 }
 
 async function listStoredCustomers() {
-  if (!hasKv()) {
+  if (!hasPersistentStorage()) {
     return Array.from(memoryStore.values()).sort(sortCustomers);
   }
 
@@ -118,7 +115,7 @@ export async function addPet(customerId: string, input: PetInput) {
 }
 
 async function getCustomer(id: string) {
-  if (!hasKv()) return memoryStore.get(id) || null;
+  if (!hasPersistentStorage()) return memoryStore.get(id) || null;
   return kv.get<CustomerRecord>(keyFor(id));
 }
 
@@ -129,7 +126,7 @@ async function findCustomerByPhone(phone: string) {
 }
 
 async function saveCustomer(customer: CustomerRecord) {
-  if (!hasKv()) {
+  if (!hasPersistentStorage()) {
     memoryStore.set(customer.id, customer);
     return;
   }

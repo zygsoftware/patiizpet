@@ -6,7 +6,12 @@ export const site = {
   phoneDisplay: "0555 111 22 33",
   email: "merhaba@patiizpet.com",
   address: "İzmir, Türkiye",
+  city: "İzmir",
+  country: "TR",
+  latitude: 38.4237,
+  longitude: 27.1428,
   instagram: "https://instagram.com/patiizpet",
+  whatsapp: "https://wa.me/905551112233",
   description:
     "İzmir'de köpek ve kedi dostları için hijyenik, sakin ve randevulu pet kuaförü deneyimi."
 };

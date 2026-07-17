@@ -39,7 +39,33 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true
-  }
+  },
+  alternates: {
+    canonical: site.url
+  },
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    siteName: site.name,
+    url: site.url,
+    title: "Patiizpet | İzmir Pet Kuaförü",
+    description: site.description,
+    images: [
+      {
+        url: "/slider-1.png",
+        width: 1200,
+        height: 630,
+        alt: "Patiizpet İzmir pet kuaförü salon görseli"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Patiizpet | İzmir Pet Kuaförü",
+    description: site.description,
+    images: ["/slider-1.png"]
+  },
+  category: "pet grooming"
 };
 
 export default function RootLayout({

@@ -1,4 +1,5 @@
 import { kv } from "@vercel/kv";
+import { hasPersistentStorage } from "./storage";
 import { BusinessSettings, ClosedBlock, DayKey } from "./types";
 
 const SETTINGS_KEY = "business:settings";
@@ -15,10 +16,6 @@ export const dayLabels: Record<DayKey, string> = {
 };
 
 export const dayOrder = Object.keys(dayLabels) as DayKey[];
-
-function hasKv() {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
-}
 
 export function defaultBusinessSettings(): BusinessSettings {
   const workingHours = dayOrder.reduce<BusinessSettings["workingHours"]>((acc, day) => {
@@ -39,7 +36,7 @@ export function defaultBusinessSettings(): BusinessSettings {
 }
 
 export async function getBusinessSettings() {
-  if (!hasKv()) return memorySettings || defaultBusinessSettings();
+  if (!hasPersistentStorage()) return memorySettings || defaultBusinessSettings();
   return (await kv.get<BusinessSettings>(SETTINGS_KEY)) || defaultBusinessSettings();
 }
 
@@ -128,7 +125,7 @@ export function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: str
 }
 
 async function saveBusinessSettings(settings: BusinessSettings) {
-  if (!hasKv()) {
+  if (!hasPersistentStorage()) {
     memorySettings = settings;
     return;
   }
